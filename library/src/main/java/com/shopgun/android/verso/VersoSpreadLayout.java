@@ -8,8 +8,6 @@ import com.shopgun.android.zoomlayout.ZoomLayout;
 public class VersoSpreadLayout extends ZoomLayout {
     
     public static final String TAG = VersoSpreadLayout.class.getSimpleName();
-    
-    private static final String UNSUPPORTED_EXCEPTION_MSG = "Default add methods are not allowed";
 
     public VersoSpreadLayout(Context context) {
         this(context, null);

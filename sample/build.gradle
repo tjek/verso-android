@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.shopgun.android.verso.demo"
+        applicationId "com.shopgun.android.verso.sample"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1

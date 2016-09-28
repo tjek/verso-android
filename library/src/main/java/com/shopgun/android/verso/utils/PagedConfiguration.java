@@ -10,10 +10,10 @@ public abstract class PagedConfiguration implements VersoSpreadConfiguration {
     private boolean mOutro = false;
 
     public PagedConfiguration() {
-        this(Orientation.LANDSCAPE, 0, false, false);
+        this(Orientation.LANDSCAPE, false, false);
     }
 
-    public PagedConfiguration(Orientation orientation, int pageCount, boolean intro, boolean outro) {
+    public PagedConfiguration(Orientation orientation, boolean intro, boolean outro) {
         mOrientation = orientation;
         mIntro = intro;
         mOutro = outro;

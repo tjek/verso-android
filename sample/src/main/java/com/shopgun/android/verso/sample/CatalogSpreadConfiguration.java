@@ -16,8 +16,8 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
     List<CatalogPage> mPages;
 
     public CatalogSpreadConfiguration() {
+        super(Orientation.LANDSCAPE, false, false);
         mPages = CatalogPage.create();
-        setOrientation(Orientation.LANDSCAPE);
     }
 
     @Override

@@ -17,7 +17,7 @@ public class CatalogPageView extends ImageView implements VersoPageView {
         super(context);
         mCatalogPage = catalogPage;
         setAdjustViewBounds(true);
-        Picasso.with(getContext()).load(mCatalogPage.thumb).into(this);
+        Picasso.with(getContext()).load(mCatalogPage.view).into(this);
     }
 
     @Override
