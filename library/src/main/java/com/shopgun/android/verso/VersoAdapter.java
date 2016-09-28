@@ -35,4 +35,8 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
         return mPublication.getConfiguration().getSpreadCount();
     }
 
+    public VersoFragment getVersoFragment(ViewGroup container, int position) {
+        return (VersoFragment) instantiateItem(container, position);
+    }
+
 }

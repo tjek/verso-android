@@ -43,19 +43,25 @@ public class VersoFragment extends Fragment {
 
             if (mScroll != position) {
                 if (mScroll < position) {
-                    // scrolling right
+                    // dragging right
                     callMove(position, mScroll, false);
                     mScroll = position;
                 } else if (position+1 != mScroll) {
-                    // scrolling left, but not at last page
+                    // dragging left, but not at first page
                     callMove(position+1, mScroll, false);
                     mScroll = position+1;
                 } else if (mScroll != 0 && position == 0 && positionOffsetPixels == 0) {
-                    // scrolling left, and at last page
+                    // dragging left, and at first page
+                    callMove(position, mScroll, false);
+                    mScroll = position;
+                } else if (mState == ViewPager.SCROLL_STATE_SETTLING && mScroll != position) {
+                    // fling left
                     callMove(position, mScroll, false);
                     mScroll = position;
                 }
             }
+
+            // TODO determine new and removed views in each fragment
 
         }
 

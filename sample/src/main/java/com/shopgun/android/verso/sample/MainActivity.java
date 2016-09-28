@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
             @Override
             public void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
-                mScrollInfo = make("scroll", currentPosition, currentPages, previousPosition, previousPages);
+                mScrollInfo = make("scroll   ", currentPosition, currentPages, previousPosition, previousPages);
                 updateInfo();
             }
 
@@ -56,8 +56,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             private String make(String what, int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
-                return String.format(Locale.US, "%s pos[ %s -> %s ], pages[ %s -> %s ]",
-                        what, previousPosition, currentPosition, TextUtils.join(",", previousPages), TextUtils.join(",", currentPages));
+                if (currentPosition > previousPosition) {
+                    return String.format(Locale.US, "%s pos[ %s -> %s ], pages[ %s -> %s ]",
+                            what, previousPosition, currentPosition, TextUtils.join(",", previousPages), TextUtils.join(",", currentPages));
+                } else {
+                    return String.format(Locale.US, "%s pos[ %s <- %s ], pages[ %s <- %s ]",
+                            what, currentPosition, previousPosition, TextUtils.join(",", currentPages), TextUtils.join(",", previousPages));
+                }
             }
 
         });
