@@ -41,6 +41,10 @@ public class VersoFragment extends Fragment {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+//            if (positionOffset < 0.02f || 0.98f < positionOffset ) {
+//                L.d(TAG, String.format(Locale.US, "onPageScrolled[ pos:%s, offset:%.2f, offsetPx:%s, mScroll:%s, %s]", position, positionOffset, positionOffsetPixels, mScroll, pageScrollStateToString(mState)));
+//            }
+
             if (mScroll != position) {
                 if (mScroll < position) {
                     // dragging right
@@ -50,12 +54,8 @@ public class VersoFragment extends Fragment {
                     // dragging left, but not at first page
                     callMove(position+1, mScroll, false);
                     mScroll = position+1;
-                } else if (mScroll != 0 && position == 0 && positionOffsetPixels == 0) {
-                    // dragging left, and at first page
-                    callMove(position, mScroll, false);
-                    mScroll = position;
-                } else if (mState == ViewPager.SCROLL_STATE_SETTLING && mScroll != position) {
-                    // fling left
+                } else if (positionOffsetPixels == 0) {
+                    // fling left and first page
                     callMove(position, mScroll, false);
                     mScroll = position;
                 }
