@@ -5,10 +5,13 @@ import android.content.res.Configuration;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 
-public class VersoViewPager extends ViewPager {
+import com.shopgun.android.verso.utils.HackedViewPager;
+
+public class VersoViewPager extends HackedViewPager {
+
+    public static final String TAG = VersoViewPager.class.getSimpleName();
 
     VersoPublication mPublication;
 
@@ -25,31 +28,14 @@ public class VersoViewPager extends ViewPager {
         super.onConfigurationChanged(newConfig);
     }
 
-    public void setVersoAdapter(VersoAdapter adapter) {
+    @Override
+    public void setAdapter(PagerAdapter adapter) {
+        if (!(adapter instanceof VersoAdapter)) {
+            throw new UnsupportedOperationException("The adapter must be an instance of VersoAdapter.");
+        }
         super.setAdapter(adapter);
     }
 
-    public VersoAdapter getVersoAdapter() {
-        return (VersoAdapter) super.getAdapter();
-    }
-
-    @Override
-    @Deprecated
-    public void setAdapter(PagerAdapter adapter) {
-        throw new UnsupportedOperationException("Custom adapters are not allowed. See VersoViewPager.setVersoAdapter(VersoAdapter).");
-    }
-
-    @Override
-    @Deprecated
-    public PagerAdapter getAdapter() {
-        throw new UnsupportedOperationException("Custom adapters are not allowed. See VersoViewPager.getVersoAdapter().");
-    }
-
-    /**
-     * Object used to keep some data when a configuration change happens and the activity is
-     * re-created.
-     * It's boiler-plate but this is how to save View state.
-     */
     private static class SavedState extends BaseSavedState {
 
         int mCurrentItem;
@@ -81,13 +67,6 @@ public class VersoViewPager extends ViewPager {
         };
     }
 
-    /**
-     * The default {@code super.onSaveInstanceState} and {@code onRestoreInstanceState} don't
-     * restore the position on the map as expected (if the instance of {@link TileView} remains the
-     * same). For this reason and if a new {@link TileView} instance is created, we have to save
-     * the current scale and position on the map, to restore them later when the {@link TileView} is
-     * recreated.
-     */
     @Override
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
