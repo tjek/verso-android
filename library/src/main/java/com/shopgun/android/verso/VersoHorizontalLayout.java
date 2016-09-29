@@ -5,6 +5,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.shopgun.android.utils.log.L;
+
 public class VersoHorizontalLayout extends LinearLayout {
     
     public static final String TAG = VersoHorizontalLayout.class.getSimpleName();
@@ -22,6 +24,14 @@ public class VersoHorizontalLayout extends LinearLayout {
     public VersoHorizontalLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setOrientation(HORIZONTAL);
+        addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
+                    L.d(TAG, "onLayoutChange");
+                }
+            }
+        });
     }
 
     @Override
@@ -73,7 +83,7 @@ public class VersoHorizontalLayout extends LinearLayout {
             }
         }
 
-        setMeasuredDimension(width, height);
+        setMeasuredDimension(resolveSize(width, widthMeasureSpec), resolveSize(height, heightMeasureSpec));
     }
 
 }

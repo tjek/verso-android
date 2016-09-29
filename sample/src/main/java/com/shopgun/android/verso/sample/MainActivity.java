@@ -1,5 +1,6 @@
 package com.shopgun.android.verso.sample;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
@@ -16,8 +17,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String FRAG_TAG = "frag_tag";
 
     TextView mInfo;
-    String mScrollInfo = "no info";
-    String mChangeInfo = "no info";
+    String mPagesInfoScroll = "no info";
+    String mPagesInfoChange = "no info";
+    String mZoomInfo = "no info";
+    String mPanInfo = "no info";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +43,13 @@ public class MainActivity extends AppCompatActivity {
         fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
             @Override
             public void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
-                mScrollInfo = make("scroll   ", currentPosition, currentPages, previousPosition, previousPages);
+                mPagesInfoScroll = make("onScroll   ", currentPosition, currentPages, previousPosition, previousPages);
                 updateInfo();
             }
 
             @Override
             public void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
-                mChangeInfo = make("change", currentPosition, currentPages, previousPosition, previousPages);
+                mPagesInfoChange = make("onChanged  ", currentPosition, currentPages, previousPosition, previousPages);
                 updateInfo();
             }
 
@@ -57,12 +60,57 @@ public class MainActivity extends AppCompatActivity {
 
             private String make(String what, int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
                 if (currentPosition > previousPosition) {
-                    return String.format(Locale.US, "%s pos[ %s -> %s ], pages[ %s -> %s ]",
+                    return String.format(Locale.US, "%s[pos:%s -> %s, pages: %s -> %s]",
                             what, previousPosition, currentPosition, TextUtils.join(",", previousPages), TextUtils.join(",", currentPages));
                 } else {
-                    return String.format(Locale.US, "%s pos[ %s <- %s ], pages[ %s <- %s ]",
+                    return String.format(Locale.US, "%s[pos:%s <- %s, pages: %s <- %s]",
                             what, currentPosition, previousPosition, TextUtils.join(",", currentPages), TextUtils.join(",", previousPages));
                 }
+            }
+
+        });
+        fragment.setOnZoomListener(new VersoFragment.OnZoomListener() {
+            @Override
+            public void onZoomBegin(int[] pages, float scale) {
+                log("onZoomBegin", pages, scale);
+            }
+
+            @Override
+            public void onZoom(int[] pages, float scale) {
+                log("onZoom     ", pages, scale);
+            }
+
+            @Override
+            public void onZoomEnd(int[] pages, float scale) {
+                log("onZoomEnd  ", pages, scale);
+            }
+
+            private void log(String what, int[] pages, float scale) {
+                mZoomInfo = String.format(Locale.US, "%s[pages:%s, scale:%.2f]", what, TextUtils.join(",", pages), scale);
+                updateInfo();
+            }
+
+        });
+
+        fragment.setOnPanListener(new VersoFragment.OnPanListener() {
+            @Override
+            public void onPanBegin(int[] pages, Rect viewRect) {
+                log("onPanBegin ", pages, viewRect);
+            }
+
+            @Override
+            public void onPan(int[] pages, Rect viewRect) {
+                log("onPan      ", pages, viewRect);
+            }
+
+            @Override
+            public void onPanEnd(int[] pages, Rect viewRect) {
+                log("onPanEnd   ", pages, viewRect);
+            }
+
+            private void log(String what, int[] pages, Rect rect) {
+                mPanInfo = String.format(Locale.US, "%s[pages:%s, rect:%s]", what, TextUtils.join(",", pages), rect.toShortString());
+                updateInfo();
             }
 
         });
@@ -70,7 +118,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateInfo() {
-        mInfo.setText(mChangeInfo + "\n" + mScrollInfo);
+        StringBuilder sb = new StringBuilder()
+                .append(mPagesInfoChange).append("\n")
+                .append(mPagesInfoScroll).append("\n")
+                .append(mZoomInfo).append("\n")
+                .append(mPanInfo);
+        mInfo.setText(sb.toString());
     }
 
 }

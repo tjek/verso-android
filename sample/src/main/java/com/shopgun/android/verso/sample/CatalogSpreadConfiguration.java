@@ -6,7 +6,6 @@ import com.shopgun.android.utils.enums.Orientation;
 import com.shopgun.android.verso.VersoSpreadProperty;
 import com.shopgun.android.verso.utils.PagedConfiguration;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CatalogSpreadConfiguration extends PagedConfiguration {
@@ -51,12 +50,9 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeList(this.mPages);
     }
 
     protected CatalogSpreadConfiguration(Parcel in) {
-        this.mPages = new ArrayList<CatalogPage>();
-        in.readList(this.mPages, CatalogPage.class.getClassLoader());
     }
 
     public static final Creator<CatalogSpreadConfiguration> CREATOR = new Creator<CatalogSpreadConfiguration>() {

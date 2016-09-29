@@ -31,9 +31,77 @@ public class VersoFragment extends Fragment {
     OnZoomListener mZoomListener;
     OnPanListener mPanListener;
 
-    ViewPager.OnPageChangeListener mViewPagerPageChangeListener = new ViewPager.OnPageChangeListener() {
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mVersoPublication = getArguments().getParcelable(PUBLICATION);
+        }
+    }
 
-        final String TAG = ViewPager.OnPageChangeListener.class.getSimpleName();
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mVersoViewPager = (VersoViewPager) inflater.inflate(R.layout.verso_fragment, container, false);
+        mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoPublication, new ZoomPanDispatcher());
+        mVersoViewPager.addOnPageChangeListener(new PageChangeDispatcher());
+        mVersoViewPager.setAdapter(mVersoAdapter);
+        return mVersoViewPager;
+    }
+
+    private String pageScrollStateToString(int state) {
+        switch (state) {
+            case ViewPager.SCROLL_STATE_DRAGGING: return "SCROLL_STATE_DRAGGING";
+            case ViewPager.SCROLL_STATE_IDLE: return "SCROLL_STATE_IDLE";
+            case ViewPager.SCROLL_STATE_SETTLING: return "SCROLL_STATE_SETTLING";
+            default: return "unknown";
+        }
+    }
+
+    public OnPageChangeListener getOnPageChangeListener() {
+        return mPageChangeListener;
+    }
+
+    public void setOnPageChangeListener(OnPageChangeListener pageChangeListener) {
+        mPageChangeListener = pageChangeListener;
+    }
+
+    public OnPanListener getOnPanListener() {
+        return mPanListener;
+    }
+
+    public void setOnPanListener(OnPanListener panListener) {
+        mPanListener = panListener;
+    }
+
+    public OnZoomListener getOnZoomListener() {
+        return mZoomListener;
+    }
+
+    public void setOnZoomListener(OnZoomListener zoomListener) {
+        mZoomListener = zoomListener;
+    }
+
+    public interface OnPageChangeListener {
+        void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
+        void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
+        void onVisiblePageIndexesChanged(int[] pages, int[] removedPages);
+    }
+
+    public interface OnZoomListener {
+        void onZoomBegin(int[] pages, float scale);
+        void onZoom(int[] pages, float scale);
+        void onZoomEnd(int[] pages, float scale);
+    }
+
+    public interface OnPanListener {
+        void onPanBegin(int[] pages, Rect viewRect);
+        void onPan(int[] pages, Rect viewRect);
+        void onPanEnd(int[] pages, Rect viewRect);
+    }
+
+    private class PageChangeDispatcher implements ViewPager.OnPageChangeListener {
+
         int mState = ViewPager.SCROLL_STATE_IDLE;
         int mChange = 0;
         int mScroll = 0;
@@ -96,75 +164,51 @@ public class VersoFragment extends Fragment {
             }
         }
 
-    };
+    }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mVersoPublication = getArguments().getParcelable(PUBLICATION);
+    private class ZoomPanDispatcher implements VersoAdapter.ZoomPanListener {
+
+        @Override
+        public void onZoomBegin(int position, int[] pages, float scale) {
+            if (mZoomListener != null) {
+                mZoomListener.onZoomBegin(pages, scale);
+            }
         }
-    }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mVersoViewPager = (VersoViewPager) inflater.inflate(R.layout.verso_fragment, container, false);
-        mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoPublication);
-        mVersoViewPager.addOnPageChangeListener(mViewPagerPageChangeListener);
-        mVersoViewPager.setAdapter(mVersoAdapter);
-        return mVersoViewPager;
-    }
-
-    private String pageScrollStateToString(int state) {
-        switch (state) {
-            case ViewPager.SCROLL_STATE_DRAGGING: return "SCROLL_STATE_DRAGGING";
-            case ViewPager.SCROLL_STATE_IDLE: return "SCROLL_STATE_IDLE";
-            case ViewPager.SCROLL_STATE_SETTLING: return "SCROLL_STATE_SETTLING";
-            default: return "unknown";
+        @Override
+        public void onZoom(int position, int[] pages, float scale) {
+            if (mZoomListener != null) {
+                mZoomListener.onZoom(pages, scale);
+            }
         }
-    }
 
-    public OnPageChangeListener getOnPageChangeListener() {
-        return mPageChangeListener;
-    }
+        @Override
+        public void onZoomEnd(int position, int[] pages, float scale) {
+            if (mZoomListener != null) {
+                mZoomListener.onZoomEnd(pages, scale);
+            }
+        }
 
-    public void setOnPageChangeListener(OnPageChangeListener pageChangeListener) {
-        mPageChangeListener = pageChangeListener;
-    }
+        @Override
+        public void onPanBegin(int position, int[] pages, Rect viewRect) {
+            if (mPanListener != null) {
+                mPanListener.onPanBegin(pages, viewRect);
+            }
+        }
 
-    public OnPanListener getOnPanListener() {
-        return mPanListener;
-    }
+        @Override
+        public void onPan(int position, int[] pages, Rect viewRect) {
+            if (mPanListener != null) {
+                mPanListener.onPan(pages, viewRect);
+            }
+        }
 
-    public void setOnPanListener(OnPanListener panListener) {
-        mPanListener = panListener;
-    }
-
-    public OnZoomListener getOnZoomListener() {
-        return mZoomListener;
-    }
-
-    public void setOnZoomListener(OnZoomListener zoomListener) {
-        mZoomListener = zoomListener;
-    }
-
-    public interface OnPageChangeListener {
-        void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
-        void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
-        void onVisiblePageIndexesChanged(int[] pages, int[] removedPages);
-    }
-
-    public interface OnZoomListener {
-        void onBeginZoom(int[] pages, float scale);
-        void onZoom(int[] pages, float scale);
-        void onEndZoom(int[] pages, float scale);
-    }
-
-    public interface OnPanListener {
-        void onBeginPan(int[] pages, Rect viewRect);
-        void onPan(int[] pages, Rect viewRect);
-        void onEndPan(int[] pages, Rect viewRect);
+        @Override
+        public void onPanEnd(int position, int[] pages, Rect viewRect) {
+            if (mPanListener != null) {
+                mPanListener.onPanEnd(pages, viewRect);
+            }
+        }
     }
 
 }
