@@ -17,8 +17,8 @@ public class CatalogPublication implements VersoPublication {
 
     private CatalogSpreadConfiguration mConfiguration;
 
-    public CatalogPublication() {
-        mConfiguration = new CatalogSpreadConfiguration();
+    public CatalogPublication(Context context) {
+        mConfiguration = new CatalogSpreadConfiguration(context);
         mConfiguration.setOutro(true);
     }
 
