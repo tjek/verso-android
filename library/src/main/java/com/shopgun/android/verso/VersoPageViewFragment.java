@@ -2,6 +2,7 @@ package com.shopgun.android.verso;
 
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -65,6 +66,11 @@ public class VersoPageViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mZoomLayout = (ZoomLayout) inflater.inflate(R.layout.verso_page_layout, container, false);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
+            // scale operations on large bitmaps are horrible slow
+            // for some reason, this works. LAYER_TYPE_SOFTWARE works too...
+            mZoomLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
         mZoomLayout.setOnZoomListener(new ZoomDispatcher());
         mZoomLayout.setOnPanListener(new PanDispatcher());
         mZoomLayout.setOnTapListener(new TapDispatcher());

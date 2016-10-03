@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mInfo = (TextView) findViewById(R.id.info);
+        mInfo.setMaxLines(4);
         updateInfo();
 
         fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
