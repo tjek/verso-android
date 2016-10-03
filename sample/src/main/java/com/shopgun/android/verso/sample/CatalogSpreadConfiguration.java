@@ -12,11 +12,15 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     public static final String TAG = CatalogSpreadConfiguration.class.getSimpleName();
 
+    List<VersoSpreadProperty> mSpreadProperties;
     List<CatalogPage> mPages;
 
     public CatalogSpreadConfiguration() {
         super(Orientation.LANDSCAPE, false, false);
         mPages = CatalogPage.create();
+        for (int i = 0; i < getSpreadCount(); i++) {
+            
+        }
     }
 
     @Override
@@ -26,8 +30,13 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     @Override
     public VersoSpreadProperty getSpreadProperty(int spreadPosition) {
+        boolean last = getSpreadCount()-1 == spreadPosition;
+
         int[] pages = positionToPages(spreadPosition, getPageCount());
-        return new VersoSpreadProperty(pages);
+        float w = last ? 0.8f : 1f;
+//        float w = 0.8f;
+//        float w = 0.5f + 0.5f * (spreadPosition/getSpreadCount());
+        return new VersoSpreadProperty(pages, w, 4.0f);
     }
 
     @Override

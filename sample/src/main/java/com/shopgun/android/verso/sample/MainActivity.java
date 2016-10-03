@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.verso.VersoFragment;
@@ -115,6 +116,51 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+        fragment.setOnTapListener(new VersoFragment.OnTapListener() {
+            @Override
+            public boolean onContentTap(int[] pages, float absX, float absY, float relX, float relY) {
+                toast("onContentTap", pages, relX, relY);
+                return true;
+            }
+
+            @Override
+            public boolean onViewTap(int[] pages, float absX, float absY) {
+                toast("onViewTap", pages, absX, absY);
+                return true;
+            }
+        });
+
+        fragment.setOnDoubleTapListener(new VersoFragment.OnDoubleTapListener() {
+            @Override
+            public boolean onContentDoubleTap(int[] pages, float absX, float absY, float relX, float relY) {
+                toast("onContentDoubleTap", pages, absX, absY);
+                return false;
+            }
+
+            @Override
+            public boolean onViewDoubleTap(int[] pages, float absX, float absY) {
+                toast("onViewDoubleTap", pages, absX, absY);
+                return false;
+            }
+        });
+
+        fragment.setOnLongTapListener(new VersoFragment.OnLongTapListener() {
+            @Override
+            public void onContentLongTap(int[] pages, float absX, float absY, float relX, float relY) {
+                toast("onContentLongTap", pages, relX, relY);
+            }
+
+            @Override
+            public void onViewLongTap(int[] pages, float absX, float absY) {
+                toast("onViewLongTap", pages, absX, absY);
+            }
+        });
+
+    }
+
+    private void toast(String what, int[] pages, float x, float y) {
+        String text = String.format(Locale.US, "%s[ pages:%s, x:%.0f, y:%.0f ]", what, TextUtils.join(",", pages), x, y);
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
     private void updateInfo() {

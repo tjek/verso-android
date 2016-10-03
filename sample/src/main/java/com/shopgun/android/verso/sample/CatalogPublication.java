@@ -1,17 +1,20 @@
 package com.shopgun.android.verso.sample;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.shopgun.android.verso.VersoPageView;
 import com.shopgun.android.verso.VersoPublication;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
 
 public class CatalogPublication implements VersoPublication {
 
     public static final String TAG = CatalogPublication.class.getSimpleName();
-    
+
     private CatalogSpreadConfiguration mConfiguration;
 
     public CatalogPublication() {
@@ -22,9 +25,36 @@ public class CatalogPublication implements VersoPublication {
     @NonNull
     @Override
     public View getPageView(ViewGroup container, int page) {
-        CatalogPage catalogPage = mConfiguration.mPages.get(page-1);
-        CatalogPageView view = new CatalogPageView(container.getContext(), catalogPage);
-        return view;
+        try {
+            CatalogPage catalogPage = mConfiguration.mPages.get(page-1);
+            return new CatalogPageView(container.getContext(), catalogPage);
+        } catch (Exception e) {
+            return new Outro(container.getContext());
+        }
+    }
+
+    class Outro extends TextView implements VersoPageView {
+
+        public Outro(Context context) {
+            super(context);
+            setText("My Outro");
+        }
+
+        @Override
+        public boolean onZoom(float scale) {
+            return false;
+        }
+
+        @Override
+        public void setOnCompletionListener() {
+
+        }
+
+        @Override
+        public OnLoadCompletionListener getOnLoadCompleteListener() {
+            return null;
+        }
+
     }
 
     @NonNull

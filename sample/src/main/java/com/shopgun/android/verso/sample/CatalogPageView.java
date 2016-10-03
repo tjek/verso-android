@@ -15,6 +15,7 @@ public class CatalogPageView extends ImageView implements VersoPageView {
     public static final String TAG = CatalogPageView.class.getSimpleName();
 
     private final CatalogPage mCatalogPage;
+    private Target mViewTarget;
     private Target mZoomTarget;
 
     public CatalogPageView(Context context, CatalogPage catalogPage) {
@@ -29,6 +30,10 @@ public class CatalogPageView extends ImageView implements VersoPageView {
         if (mZoomTarget == null && scale > 1.2) {
             mZoomTarget = new ZoomTarget();
             Picasso.with(getContext()).load(mCatalogPage.zoom).into(mZoomTarget);
+        } else if (mZoomTarget != null && scale < 1.2) {
+            mZoomTarget = null;
+            mViewTarget = new ZoomTarget();
+            Picasso.with(getContext()).load(mCatalogPage.view).into(mViewTarget);
         }
         return false;
     }

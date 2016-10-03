@@ -11,7 +11,7 @@
     <TextView
         android:id="@+id/info"
         android:typeface="monospace"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
