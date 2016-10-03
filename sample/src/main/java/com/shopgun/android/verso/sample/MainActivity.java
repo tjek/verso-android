@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         VersoFragment fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
         if (fragment == null) {
-            fragment = VersoFragment.newInstance(new CatalogPublication());
+            fragment = VersoFragment.newInstance(new CatalogPublication(this));
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.verso, fragment, FRAG_TAG)

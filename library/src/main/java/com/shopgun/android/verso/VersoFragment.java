@@ -4,12 +4,11 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.CenteredViewPager;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.shopgun.android.utils.log.L;
 
 public class VersoFragment extends Fragment {
 
@@ -55,15 +54,9 @@ public class VersoFragment extends Fragment {
         mVersoAdapter.setOnLongTapListener(dispatcher);
         mVersoAdapter.setOnZoomListener(dispatcher);
         mVersoAdapter.setOnPanListener(dispatcher);
-        mVersoViewPager.addOnPageChangeListener(new PageChangeDispatcher());
+        mVersoViewPager.setOnPageChangeListener(new PageChangeDispatcher());
         mVersoViewPager.setAdapter(mVersoAdapter);
-        mVersoViewPager.setClipToPadding(false);
-        mVersoViewPager.setPageTransformer(false, new ViewPager.PageTransformer() {
-            @Override
-            public void transformPage(View page, float position) {
-                L.d(TAG, "transformPage: " + position + ", type: " + page.getClass().getSimpleName());
-            }
-        });
+        mVersoViewPager.setPageMargin(mVersoPublication.getConfiguration().getSpreadMargin());
         return mVersoViewPager;
     }
 
@@ -133,7 +126,7 @@ public class VersoFragment extends Fragment {
         void onViewLongTap(int[] pages, float absX, float absY);
     }
 
-    private class PageChangeDispatcher implements ViewPager.OnPageChangeListener {
+    private class PageChangeDispatcher implements CenteredViewPager.OnPageChangeListener {
 
         int mState = ViewPager.SCROLL_STATE_IDLE;
         int mChange = 0;

@@ -11,12 +11,12 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
 
     public static final String TAG = VersoAdapter.class.getSimpleName();
 
-    VersoPublication mPublication;
-    VersoPageViewFragment.OnZoomListener mOnZoomListener;
-    VersoPageViewFragment.OnPanListener mOnPanListener;
-    VersoPageViewFragment.OnTapListener mOnTapListener;
-    VersoPageViewFragment.OnDoubleTapListener mOnDoubleTapListener;
-    VersoPageViewFragment.OnLongTapListener mOnLongTapListener;
+    private VersoPublication mPublication;
+    private VersoPageViewFragment.OnZoomListener mOnZoomListener;
+    private VersoPageViewFragment.OnPanListener mOnPanListener;
+    private VersoPageViewFragment.OnTapListener mOnTapListener;
+    private VersoPageViewFragment.OnDoubleTapListener mOnDoubleTapListener;
+    private VersoPageViewFragment.OnLongTapListener mOnLongTapListener;
 
     public VersoAdapter(FragmentManager fragmentManager, VersoPublication publication) {
         super(fragmentManager);

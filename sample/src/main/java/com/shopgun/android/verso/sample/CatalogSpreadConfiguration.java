@@ -1,25 +1,33 @@
 package com.shopgun.android.verso.sample;
 
+import android.content.Context;
 import android.os.Parcel;
 
+import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.utils.enums.Orientation;
 import com.shopgun.android.verso.VersoSpreadProperty;
 import com.shopgun.android.verso.utils.PagedConfiguration;
 
 import java.util.List;
+import java.util.Random;
 
 public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     public static final String TAG = CatalogSpreadConfiguration.class.getSimpleName();
 
+    Context mContext;
     List<VersoSpreadProperty> mSpreadProperties;
     List<CatalogPage> mPages;
+    float[] mWidth;
 
-    public CatalogSpreadConfiguration() {
+    public CatalogSpreadConfiguration(Context context) {
         super(Orientation.LANDSCAPE, false, false);
+        mContext = context;
         mPages = CatalogPage.create();
-        for (int i = 0; i < getSpreadCount(); i++) {
-            
+        mWidth = new float[mPages.size()];
+        Random r = new Random();
+        for (int i = 0; i < mWidth.length; i++) {
+            mWidth[i] = 0.6f + (0.4f * r.nextFloat());
         }
     }
 
@@ -30,13 +38,10 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     @Override
     public VersoSpreadProperty getSpreadProperty(int spreadPosition) {
-        boolean last = getSpreadCount()-1 == spreadPosition;
-
         int[] pages = positionToPages(spreadPosition, getPageCount());
-        float w = last ? 0.8f : 1f;
-//        float w = 0.8f;
-//        float w = 0.5f + 0.5f * (spreadPosition/getSpreadCount());
-        return new VersoSpreadProperty(pages, w, 4.0f);
+        boolean narrow = spreadPosition == 0 || getSpreadCount()-1 == spreadPosition;
+        float w = narrow ? 0.6f : mWidth[spreadPosition];
+        return new CatalogSpreadProperty(pages, w, 4.0f);
     }
 
     @Override
@@ -50,6 +55,11 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
             count ++;
         }
         return count;
+    }
+
+    @Override
+    public int getSpreadMargin() {
+        return UnitUtils.dpToPx(20, mContext);
     }
 
     @Override

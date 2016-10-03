@@ -4,16 +4,13 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.view.CenteredViewPager;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 
-import com.shopgun.android.verso.utils.HackedViewPager;
-
-public class VersoViewPager extends HackedViewPager {
+public class VersoViewPager extends CenteredViewPager {
 
     public static final String TAG = VersoViewPager.class.getSimpleName();
-
-    VersoPublication mPublication;
 
     public VersoViewPager(Context context) {
         super(context);
