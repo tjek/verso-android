@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onVisiblePageIndexesChanged(int[] pages, int[] removedPages) {
+            public void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed) {
 
             }
 

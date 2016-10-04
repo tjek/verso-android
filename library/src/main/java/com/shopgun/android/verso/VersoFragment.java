@@ -10,6 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.shopgun.android.utils.log.L;
+
+import java.util.HashSet;
+import java.util.Locale;
+
 public class VersoFragment extends Fragment {
 
     public static final String TAG = VersoFragment.class.getSimpleName();
@@ -96,7 +101,7 @@ public class VersoFragment extends Fragment {
     public interface OnPageChangeListener {
         void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
         void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
-        void onVisiblePageIndexesChanged(int[] pages, int[] removedPages);
+        void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed);
     }
 
     public interface OnZoomListener {
@@ -129,75 +134,114 @@ public class VersoFragment extends Fragment {
     private class PageChangeDispatcher implements CenteredViewPager.OnPageChangeListener {
 
         int mState = ViewPager.SCROLL_STATE_IDLE;
-        int mChange = 0;
-        int mScroll = 0;
+        int mChangePosition = 0;
+        int mScrollPosition = 0;
+        HashSet<Integer> mPages = new HashSet<>();
+        Rect mViewPagetHitRect = new Rect();
+        Rect mFragmentHitRect = new Rect();
+        int[] mPos = new int[2];
+        float mLastOffset = 0;
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-//            if (positionOffset < 0.02f || 0.98f < positionOffset ) {
-//                L.d(TAG, String.format(Locale.US, "onPageScrolled[ pos:%s, offset:%.2f, offsetPx:%s, mScroll:%s, %s]", position, positionOffset, positionOffsetPixels, mScroll, pageScrollStateToString(mState)));
-//            }
+            // First check if we have scrolled far enough that a new fragment is in the center of the ViewPager
 
-            if (mScroll != position) {
-                if (mScroll < position) {
-                    // dragging right
-                    callScroll(position, mScroll);
-                } else if (position+1 != mScroll) {
-                    // dragging left, but not at first page
-                    callScroll(position+1, mScroll);
-                } else if (positionOffsetPixels == 0) {
-                    // fling left and first page
-                    callScroll(position, mScroll);
+            if (position < mScrollPosition ||
+                    (position == mScrollPosition && positionOffset < mLastOffset)) {
+                // Scrolling left
+                int nextPos = mScrollPosition-1;
+                if (nextPos >= 0) {
+                    VersoPageViewFragment f = mVersoAdapter.getVersoFragment(null, nextPos);
+                    updateFragmentHitRect(f);
+                    if (mFragmentHitRect.centerX() >= mViewPagetHitRect.centerX()
+                            || (position == 0 && positionOffsetPixels <= 0)) {
+                        scrollTo(nextPos);
+                    }
                 }
+            } else if (position > mScrollPosition ||
+                    (position == mScrollPosition && positionOffset > mLastOffset)) {
+                // Scrolling right
+                int nextPos = mScrollPosition+1;
+                VersoPageViewFragment f = mVersoAdapter.getVersoFragment(null, nextPos);
+                updateFragmentHitRect(f);
+                if (mFragmentHitRect.centerX() <= mViewPagetHitRect.centerX()
+                        || (nextPos == mVersoAdapter.getCount()-1 && mFragmentHitRect.right <= mViewPagetHitRect.right)) {
+                    scrollTo(nextPos);
+                }
+            } else {
+                // initializer and bounce effect
+                mVersoViewPager.getHitRect(mViewPagetHitRect);
+                mVersoViewPager.getLocationOnScreen(mPos);
+                mViewPagetHitRect.offsetTo(mPos[0], mPos[1]);
             }
 
-//            if (position == 0) {
-//
-//            } else if (position == mVersoAdapter.getCount()) {
-//
-//            } else {
-//
+            mLastOffset = positionOffset;
+
+            // Now check if there is any change in visible and removed pages (from individual fragments)
+
+            if (position == 0) {
+                // First position
+//                mPageChangeListener.onVisiblePageIndexesChanged();
+            } else if (position == mVersoAdapter.getCount()) {
+                // last position
+
+            } else {
+                // anywhere in between
+
+            }
+
+        }
+
+        private void updateFragmentHitRect(VersoPageViewFragment f) {
+            View v = f.getView();
+            if (v != null) {
+                v.getHitRect(mFragmentHitRect);
+                v.getLocationOnScreen(mPos);
+                mFragmentHitRect.offsetTo(mPos[0], mPos[1]);
+            } else {
+                mFragmentHitRect.set(0,0,0,0);
+            }
+        }
+
+        private void printScrolled(String msg, int position, float positionOffset, int positionOffsetPixels) {
+//            if (positionOffset < 0.10f || 0.90f < positionOffset ) {
+                L.d(TAG, String.format(Locale.US, "scroll[ %s, pos:%s, offset:%.2f, offsetPx:%s ]", msg, position, positionOffset, positionOffsetPixels));
 //            }
+        }
 
-            // TODO determine new and removed views in each fragment
-
+        private void scrollTo(int position) {
+            int prevPos = mScrollPosition;
+            mScrollPosition = position;
+            if (mPageChangeListener != null) {
+                VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
+                int[] previousPages = c.getSpreadProperty(prevPos).getPages();
+                int[] currentPages = c.getSpreadProperty(mScrollPosition).getPages();
+                mPageChangeListener.onPagesScrolled(mScrollPosition, currentPages, prevPos, previousPages);
+            }
         }
 
         @Override
         public void onPageSelected(int position) {
-            onChange(position);
+            moveTo(position);
         }
 
         @Override
         public void onPageScrollStateChanged(int state) {
             mState = state;
-            callMove(mVersoViewPager.getCurrentItem(), mChange);
+            moveTo(mVersoViewPager.getCurrentItem());
         }
 
-        private void onChange(int position) {
-            callMove(position, mChange);
-        }
-
-        private void callMove(int currentPos, int prevPos) {
-            if (mState == ViewPager.SCROLL_STATE_IDLE && currentPos != prevPos) {
-                mChange = currentPos;
+        private void moveTo(int position) {
+            if (mState == ViewPager.SCROLL_STATE_IDLE && position != mChangePosition) {
+                int prevPos = mChangePosition;
+                mChangePosition = position;
                 if (mPageChangeListener != null) {
                     VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
                     int[] previousPages = c.getSpreadProperty(prevPos).getPages();
-                    int[] currentPages = c.getSpreadProperty(currentPos).getPages();
-                    mPageChangeListener.onPagesChanged(currentPos, currentPages, prevPos, previousPages);
+                    int[] currentPages = c.getSpreadProperty(mChangePosition).getPages();
+                    mPageChangeListener.onPagesChanged(mChangePosition, currentPages, prevPos, previousPages);
                 }
-            }
-        }
-
-        private void callScroll(int currentPos, int prevPos) {
-            mScroll = currentPos;
-            if (mPageChangeListener != null) {
-                VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
-                int[] previousPages = c.getSpreadProperty(prevPos).getPages();
-                int[] currentPages = c.getSpreadProperty(currentPos).getPages();
-                mPageChangeListener.onPagesScrolled(currentPos, currentPages, prevPos, previousPages);
             }
         }
 

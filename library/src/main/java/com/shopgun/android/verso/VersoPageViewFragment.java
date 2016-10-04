@@ -15,6 +15,8 @@ import com.shopgun.android.verso.utils.VersoLog;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
+import java.util.ArrayList;
+
 public class VersoPageViewFragment extends Fragment {
 
     public static final String TAG = VersoPageViewFragment.class.getSimpleName();
@@ -32,11 +34,13 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     // Views
-    private ZoomLayout mZoomLayout;
+    private VersoSpreadLayout mSpreadLayout;
     private LinearLayout mPageContainer;
 
     // Input data
     private VersoPublication mVersoPublication;
+    private VersoSpreadConfiguration mConfig;
+    private VersoSpreadProperty mProperty;
     private int mPosition;
     private int[] mPages;
 
@@ -53,9 +57,9 @@ public class VersoPageViewFragment extends Fragment {
         if (getArguments() != null) {
             mVersoPublication = getArguments().getParcelable(VERSO_PUBLICATION_KEY);
             mPosition = getArguments().getInt(VERSO_POSITION_KEY);
-            VersoSpreadConfiguration config = mVersoPublication.getConfiguration();
-            VersoSpreadProperty property = config.getSpreadProperty(mPosition);
-            mPages = property.getPages();
+            mConfig = mVersoPublication.getConfiguration();
+            mProperty = mConfig.getSpreadProperty(mPosition);
+            mPages = mProperty.getPages();
             if (mPages.length == 0) {
                 VersoLog.d(TAG, "There are no pages in the current spread, at position " + mPosition + ". No content will be displayed");
             }
@@ -65,19 +69,19 @@ public class VersoPageViewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mZoomLayout = (ZoomLayout) inflater.inflate(R.layout.verso_page_layout, container, false);
+        mSpreadLayout = (VersoSpreadLayout) inflater.inflate(R.layout.verso_page_layout, container, false);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
             // scale operations on large bitmaps are horrible slow
             // for some reason, this works. LAYER_TYPE_SOFTWARE works too...
-            mZoomLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            mSpreadLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
-        mZoomLayout.setOnZoomListener(new ZoomDispatcher());
-        mZoomLayout.setOnPanListener(new PanDispatcher());
-        mZoomLayout.setOnTapListener(new TapDispatcher());
-        mZoomLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
-        mZoomLayout.setOnLongTapListener(new LongTapDispatcher());
-        mPageContainer = (LinearLayout) mZoomLayout.findViewById(R.id.verso_pages_container);
+        mSpreadLayout.setOnZoomListener(new ZoomDispatcher());
+        mSpreadLayout.setOnPanListener(new PanDispatcher());
+        mSpreadLayout.setOnTapListener(new TapDispatcher());
+        mSpreadLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
+        mSpreadLayout.setOnLongTapListener(new LongTapDispatcher());
 
+        mPageContainer = (LinearLayout) mSpreadLayout.findViewById(R.id.verso_pages_container);
         for (int page : mPages) {
             View view = mVersoPublication.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {
@@ -85,7 +89,7 @@ public class VersoPageViewFragment extends Fragment {
             }
             mPageContainer.addView(view);
         }
-        return mZoomLayout;
+        return mSpreadLayout;
 
     }
 
@@ -138,7 +142,7 @@ public class VersoPageViewFragment extends Fragment {
 
     private final Rect mDrawRect = new Rect();
     private void updateRect() {
-        RectF r = mZoomLayout.getDrawRect();
+        RectF r = mSpreadLayout.getDrawRect();
         mDrawRect.set(Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom));
     }
 
@@ -153,6 +157,38 @@ public class VersoPageViewFragment extends Fragment {
         public boolean onViewTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
             return mOnTapListener != null && mOnTapListener.onViewTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
         }
+    }
+
+    public void dispatchZoom(float scale) {
+        int count = mPageContainer.getChildCount();
+        for (int i = 0; i < count; i++) {
+            final View v = mPageContainer.getChildAt(i);
+            if (v instanceof VersoPageView) {
+                ((VersoPageView)v).onZoom(scale);
+            }
+        }
+    }
+
+    Rect mHitBounds = new Rect();
+    ArrayList<Integer> mVisiblePages = new ArrayList<>();
+    public int[] getVisiblePages(Rect bounds) {
+        mVisiblePages.clear();
+        int[] pos = new int[2];
+        int count = mPageContainer.getChildCount();
+        for (int i = 0; i < count; i++) {
+            final View v = mPageContainer.getChildAt(i);
+            v.getHitRect(mHitBounds);
+            v.getLocationOnScreen(pos);
+            mHitBounds.offsetTo(pos[0], pos[1]);
+            if (Rect.intersects(bounds, mHitBounds)) {
+                mVisiblePages.add(mPages[i]);
+            }
+        }
+        int[] pages = new int[mVisiblePages.size()];
+        for (int i = 0; i < mVisiblePages.size(); i++) {
+            pages[i] = mVisiblePages.get(i);
+        }
+        return pages;
     }
 
     private class DoubleTapDispatcher implements ZoomLayout.OnDoubleTapListener {
@@ -198,13 +234,7 @@ public class VersoPageViewFragment extends Fragment {
 
         @Override
         public void onZoom(ZoomLayout view, float scale) {
-            int count = mPageContainer.getChildCount();
-            for (int i = 0; i < count; i++) {
-                final View v = mPageContainer.getChildAt(i);
-                if (v instanceof VersoPageView) {
-                    ((VersoPageView)v).onZoom(scale);
-                }
-            }
+            dispatchZoom(scale);
             if (mOnZoomListener != null) {
                 updateRect();
                 mOnZoomListener.onZoom(VersoPageViewFragment.this, mPosition, mPages, scale, mDrawRect);
