@@ -44,6 +44,11 @@ public abstract class FragmentStatelessPagerAdapter extends FragmentStatePagerAd
         return createItem(position);
     }
 
+    protected Fragment[] getFragments() {
+        ensureFragmentArray();
+        return mFragments;
+    }
+
     /**
      * Return the Fragment associated with a specified position.
      * @param position The position to create an item for

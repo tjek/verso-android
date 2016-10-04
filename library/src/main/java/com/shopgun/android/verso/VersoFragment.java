@@ -12,7 +12,11 @@ import android.view.ViewGroup;
 
 import com.shopgun.android.utils.log.L;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 public class VersoFragment extends Fragment {
@@ -136,7 +140,7 @@ public class VersoFragment extends Fragment {
         int mState = ViewPager.SCROLL_STATE_IDLE;
         int mChangePosition = 0;
         int mScrollPosition = 0;
-        HashSet<Integer> mPages = new HashSet<>();
+        HashSet<Integer> mCurrentVisiblePages = new HashSet<>();
         Rect mViewPagetHitRect = new Rect();
         Rect mFragmentHitRect = new Rect();
         int[] mPos = new int[2];
@@ -144,8 +148,22 @@ public class VersoFragment extends Fragment {
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            // First check if we need to update scroll position
+            updateScrollPosition(position, positionOffset, positionOffsetPixels);
+            // Then check if there is any change in visible and removed pages (from individual fragments)
+            updateVisiblePages();
+        }
 
-            // First check if we have scrolled far enough that a new fragment is in the center of the ViewPager
+        /**
+         * Determine if we have scrolled far enough that a new fragment is in the center of the ViewPager.
+         * If so, scroll position will be updated, and callbacks will be triggered.
+         *
+         * @param position             Position index of the first page currently being displayed.
+         *                             Page position+1 will be visible if positionOffset is nonzero.
+         * @param positionOffset       Value from [0, 1) indicating the offset from the page at position.
+         * @param positionOffsetPixels Value in pixels indicating the offset from position.
+         */
+        private void updateScrollPosition(int position, float positionOffset, int positionOffsetPixels) {
 
             if (position < mScrollPosition ||
                     (position == mScrollPosition && positionOffset < mLastOffset)) {
@@ -178,19 +196,6 @@ public class VersoFragment extends Fragment {
 
             mLastOffset = positionOffset;
 
-            // Now check if there is any change in visible and removed pages (from individual fragments)
-
-            if (position == 0) {
-                // First position
-//                mPageChangeListener.onVisiblePageIndexesChanged();
-            } else if (position == mVersoAdapter.getCount()) {
-                // last position
-
-            } else {
-                // anywhere in between
-
-            }
-
         }
 
         private void updateFragmentHitRect(VersoPageViewFragment f) {
@@ -221,6 +226,37 @@ public class VersoFragment extends Fragment {
             }
         }
 
+        /**
+         * Determine if there is any change to the currently visible VersoPageView's in the ViewPager.
+         * If so,  callbacks will be triggered.
+         */
+        @SuppressWarnings("unchecked")
+        private void updateVisiblePages() {
+            if (mPageChangeListener != null) {
+                List<VersoPageViewFragment> fragments = mVersoAdapter.getVersoFragments();
+                HashSet<Integer> currentPages = new HashSet<>();
+                for (VersoPageViewFragment f : fragments) {
+                    f.getVisiblePages(mViewPagetHitRect, currentPages);
+                }
+                List<Integer> added = diffHashSet(currentPages, mCurrentVisiblePages);
+                List<Integer> removed = diffHashSet(mCurrentVisiblePages, currentPages);
+                if (!added.isEmpty() || !removed.isEmpty()) {
+                    List<Integer> pages = new ArrayList<>();
+                    for (Integer p : currentPages) {
+                        pages.add(p);
+                    }
+                    Collections.sort(pages);
+                    int[] p = toInt(pages);
+                    int[] a = toInt(added);
+                    int[] r = toInt(removed);
+
+                    mPageChangeListener.onVisiblePageIndexesChanged(p, a, r);
+                    mCurrentVisiblePages.clear();
+                    mCurrentVisiblePages.addAll(currentPages);
+                }
+            }
+        }
+
         @Override
         public void onPageSelected(int position) {
             moveTo(position);
@@ -245,6 +281,26 @@ public class VersoFragment extends Fragment {
             }
         }
 
+    }
+
+    private static int[] toInt(List<Integer> list) {
+        int[] tmp = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            tmp[i] = list.get(i);
+        }
+        return tmp;
+    }
+
+    private static <T> List<T> diffHashSet(HashSet<T> lhs, HashSet<T> rhs) {
+        List<T> result = new ArrayList<>();
+        Iterator<T> it = lhs.iterator();
+        while (it.hasNext()) {
+            T p = it.next();
+            if (!rhs.contains(p)) {
+                result.add(p);
+            }
+        }
+        return result;
     }
 
     private class Dispatcher implements

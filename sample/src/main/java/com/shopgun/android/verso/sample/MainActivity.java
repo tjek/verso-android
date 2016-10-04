@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     String mPagesInfoChange = "no info";
     String mZoomInfo = "no info";
     String mPanInfo = "no info";
+    String mVisiblePagesInfo = "no info";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mInfo = (TextView) findViewById(R.id.info);
-        mInfo.setMaxLines(4);
+        mInfo.setMinLines(5);
+        mInfo.setMaxLines(5);
         updateInfo();
 
         fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
@@ -57,7 +59,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed) {
-
+                mVisiblePagesInfo = "visible    [ p:" + TextUtils.join(",", pages) +
+                        ", a:" + TextUtils.join(",", added) +
+                        ", r:" + TextUtils.join(",", removed) + " ]";
+                updateInfo();
             }
 
             private String make(String what, int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
@@ -169,7 +174,8 @@ public class MainActivity extends AppCompatActivity {
                 .append(mPagesInfoChange).append("\n")
                 .append(mPagesInfoScroll).append("\n")
                 .append(mZoomInfo).append("\n")
-                .append(mPanInfo);
+                .append(mPanInfo).append("\n")
+                .append(mVisiblePagesInfo);
         mInfo.setText(sb.toString());
     }
 

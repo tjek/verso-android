@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 
 import com.shopgun.android.verso.utils.FragmentStatelessPagerAdapter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatelessPagerAdapter {
 
     public static final String TAG = VersoAdapter.class.getSimpleName();
@@ -51,6 +54,16 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
 
     public VersoPageViewFragment getVersoFragment(ViewGroup container, int position) {
         return (VersoPageViewFragment) instantiateItem(container, position);
+    }
+
+    public List<VersoPageViewFragment> getVersoFragments() {
+        ArrayList<VersoPageViewFragment> list = new ArrayList<>();
+        for (Fragment f : getFragments()) {
+            if (f != null) {
+                list.add((VersoPageViewFragment)f);
+            }
+        }
+        return list;
     }
 
     public void setOnTapListener(VersoPageViewFragment.OnTapListener listener) {

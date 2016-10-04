@@ -15,7 +15,7 @@ import com.shopgun.android.verso.utils.VersoLog;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 public class VersoPageViewFragment extends Fragment {
 
@@ -169,10 +169,8 @@ public class VersoPageViewFragment extends Fragment {
         }
     }
 
-    Rect mHitBounds = new Rect();
-    ArrayList<Integer> mVisiblePages = new ArrayList<>();
-    public int[] getVisiblePages(Rect bounds) {
-        mVisiblePages.clear();
+    public void getVisiblePages(Rect bounds, HashSet<Integer> result) {
+        Rect mHitBounds = new Rect();
         int[] pos = new int[2];
         int count = mPageContainer.getChildCount();
         for (int i = 0; i < count; i++) {
@@ -181,14 +179,9 @@ public class VersoPageViewFragment extends Fragment {
             v.getLocationOnScreen(pos);
             mHitBounds.offsetTo(pos[0], pos[1]);
             if (Rect.intersects(bounds, mHitBounds)) {
-                mVisiblePages.add(mPages[i]);
+                result.add(mPages[i]);
             }
         }
-        int[] pages = new int[mVisiblePages.size()];
-        for (int i = 0; i < mVisiblePages.size(); i++) {
-            pages[i] = mVisiblePages.get(i);
-        }
-        return pages;
     }
 
     private class DoubleTapDispatcher implements ZoomLayout.OnDoubleTapListener {
