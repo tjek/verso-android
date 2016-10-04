@@ -1,12 +1,10 @@
 package com.shopgun.android.verso.sample.imageview;
 
-import android.content.Context;
-import android.os.Parcel;
-
 import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.utils.enums.Orientation;
 import com.shopgun.android.verso.VersoSpreadProperty;
 import com.shopgun.android.verso.sample.SpreadPropertyImpl;
+import com.shopgun.android.verso.sample.VersoSampleApp;
 import com.shopgun.android.verso.utils.PagedConfiguration;
 
 import java.util.List;
@@ -16,14 +14,12 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     public static final String TAG = CatalogSpreadConfiguration.class.getSimpleName();
 
-    Context mContext;
     List<VersoSpreadProperty> mSpreadProperties;
     List<CatalogPage> mPages;
     float[] mWidth;
 
-    public CatalogSpreadConfiguration(Context context) {
+    public CatalogSpreadConfiguration() {
         super(Orientation.LANDSCAPE, false, false);
-        mContext = context;
         mPages = CatalogPage.create();
         mWidth = new float[mPages.size()];
         Random r = new Random();
@@ -60,30 +56,7 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
 
     @Override
     public int getSpreadMargin() {
-        return UnitUtils.dpToPx(20, mContext);
+        return UnitUtils.dpToPx(20, VersoSampleApp.context);
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-    }
-
-    protected CatalogSpreadConfiguration(Parcel in) {
-    }
-
-    public static final Creator<CatalogSpreadConfiguration> CREATOR = new Creator<CatalogSpreadConfiguration>() {
-        @Override
-        public CatalogSpreadConfiguration createFromParcel(Parcel source) {
-            return new CatalogSpreadConfiguration(source);
-        }
-
-        @Override
-        public CatalogSpreadConfiguration[] newArray(int size) {
-            return new CatalogSpreadConfiguration[size];
-        }
-    };
 }

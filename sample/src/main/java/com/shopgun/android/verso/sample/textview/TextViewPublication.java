@@ -11,27 +11,52 @@ import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.verso.VersoPageView;
 import com.shopgun.android.verso.VersoPublication;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
+import com.shopgun.android.verso.VersoSpreadProperty;
+import com.shopgun.android.verso.sample.SpreadPropertyImpl;
 
 public class TextViewPublication implements VersoPublication {
 
-    Context mContext;
     TextViewSpreadConfiguration mConfiguration;
 
-    public TextViewPublication(Context context) {
-        mContext = context;
-        mConfiguration = new TextViewSpreadConfiguration(context);
+    public TextViewPublication() {
+        mConfiguration = new TextViewSpreadConfiguration();
     }
 
     @NonNull
     @Override
     public View getPageView(ViewGroup container, int page) {
-        VersoTextView tv = new VersoTextView(container.getContext());
+        Context ctx = container.getContext();
+        VersoTextView tv = new VersoTextView(ctx);
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        tv.setTextSize(UnitUtils.dpToPx(30, container.getContext()));
+        tv.setTextSize(UnitUtils.dpToPx(30, ctx));
         tv.setText("Page " + page);
         return tv;
+    }
+
+    private class TextViewSpreadConfiguration implements VersoSpreadConfiguration {
+
+        @Override
+        public int getPageCount() {
+            return 6;
+        }
+
+        @Override
+        public int getSpreadCount() {
+            return 6;
+        }
+
+        @Override
+        public int getSpreadMargin() {
+            return 30;
+        }
+
+        @Override
+        public VersoSpreadProperty getSpreadProperty(int spreadPosition) {
+            return new SpreadPropertyImpl(new int[]{spreadPosition}, 0.8f, 4.0f);
+        }
+
     }
 
     private class VersoTextView extends TextView implements VersoPageView {
@@ -81,7 +106,7 @@ public class TextViewPublication implements VersoPublication {
     public void writeToParcel(Parcel dest, int flags) { }
 
     protected TextViewPublication(Parcel in) {
-        this.mConfiguration = in.readParcelable(TextViewSpreadConfiguration.class.getClassLoader());
+        this();
     }
 
     public static final Creator<TextViewPublication> CREATOR = new Creator<TextViewPublication>() {

@@ -17,8 +17,8 @@ public class CatalogPublication implements VersoPublication {
 
     private CatalogSpreadConfiguration mConfiguration;
 
-    public CatalogPublication(Context context) {
-        mConfiguration = new CatalogSpreadConfiguration(context);
+    public CatalogPublication() {
+        mConfiguration = new CatalogSpreadConfiguration();
         mConfiguration.setOutro(true);
     }
 
@@ -81,11 +81,10 @@ public class CatalogPublication implements VersoPublication {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(this.mConfiguration, flags);
     }
 
     protected CatalogPublication(Parcel in) {
-        this.mConfiguration = in.readParcelable(CatalogSpreadConfiguration.class.getClassLoader());
+        this();
     }
 
     public static final Creator<CatalogPublication> CREATOR = new Creator<CatalogPublication>() {
