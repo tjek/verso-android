@@ -1,4 +1,4 @@
-package com.shopgun.android.verso.sample;
+package com.shopgun.android.verso.sample.imageview;
 
 import android.content.Context;
 import android.os.Parcel;
@@ -6,6 +6,7 @@ import android.os.Parcel;
 import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.utils.enums.Orientation;
 import com.shopgun.android.verso.VersoSpreadProperty;
+import com.shopgun.android.verso.sample.SpreadPropertyImpl;
 import com.shopgun.android.verso.utils.PagedConfiguration;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class CatalogSpreadConfiguration extends PagedConfiguration {
         int[] pages = positionToPages(spreadPosition, getPageCount());
         boolean narrow = spreadPosition == 0 || getSpreadCount()-1 == spreadPosition;
         float w = narrow ? 0.6f : mWidth[spreadPosition];
-        return new CatalogSpreadProperty(pages, w, 4.0f);
+        return new SpreadPropertyImpl(pages, w, 4.0f);
     }
 
     @Override

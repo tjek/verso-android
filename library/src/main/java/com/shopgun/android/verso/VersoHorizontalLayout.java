@@ -5,8 +5,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.shopgun.android.utils.log.L;
-
 public class VersoHorizontalLayout extends LinearLayout {
     
     public static final String TAG = VersoHorizontalLayout.class.getSimpleName();
@@ -24,14 +22,6 @@ public class VersoHorizontalLayout extends LinearLayout {
     public VersoHorizontalLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setOrientation(HORIZONTAL);
-        addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
-                    L.d(TAG, "onLayoutChange");
-                }
-            }
-        });
     }
 
     @Override
@@ -62,7 +52,16 @@ public class VersoHorizontalLayout extends LinearLayout {
 //        }
     }
 
-
+    private int getVisibleChildCount() {
+        int c = getChildCount();
+        for (int i = 0; i < c; i++) {
+            final View child = getChildAt(i);
+            if (child.getVisibility() == View.GONE) {
+                c--;
+            }
+        }
+        return c;
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -70,16 +69,19 @@ public class VersoHorizontalLayout extends LinearLayout {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
         final int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        final int childWidth = width / mChildExpectedCount;
-        final int childHeight = height;
+        final int childCount = getChildCount();
+        if (childCount > 0) {
+            final int childWidth = width / getVisibleChildCount();
+            final int childHeight = height;
 
-        final int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.AT_MOST);
-        final int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.AT_MOST);
+            final int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.AT_MOST);
+            final int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.AT_MOST);
 
-        for (int i = 0; i < getChildCount(); i++) {
-            final View child = getChildAt(i);
-            if (child.getVisibility() != View.GONE) {
-                child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+            for (int i = 0; i < childCount; i++) {
+                final View child = getChildAt(i);
+                if (child.getVisibility() != View.GONE) {
+                    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+                }
             }
         }
 

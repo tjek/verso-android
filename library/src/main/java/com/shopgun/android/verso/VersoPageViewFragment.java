@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.shopgun.android.verso.utils.VersoLog;
 import com.shopgun.android.zoomlayout.ZoomLayout;
@@ -35,7 +34,7 @@ public class VersoPageViewFragment extends Fragment {
 
     // Views
     private VersoSpreadLayout mSpreadLayout;
-    private LinearLayout mPageContainer;
+    private VersoHorizontalLayout mPageContainer;
 
     // Input data
     private VersoPublication mVersoPublication;
@@ -81,7 +80,7 @@ public class VersoPageViewFragment extends Fragment {
         mSpreadLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
         mSpreadLayout.setOnLongTapListener(new LongTapDispatcher());
 
-        mPageContainer = (LinearLayout) mSpreadLayout.findViewById(R.id.verso_pages_container);
+        mPageContainer = (VersoHorizontalLayout) mSpreadLayout.findViewById(R.id.verso_pages_container);
         for (int page : mPages) {
             View view = mVersoPublication.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {

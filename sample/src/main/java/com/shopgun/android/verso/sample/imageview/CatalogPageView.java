@@ -1,4 +1,4 @@
-package com.shopgun.android.verso.sample;
+package com.shopgun.android.verso.sample.imageview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -47,6 +47,16 @@ public class CatalogPageView extends ImageView implements VersoPageView {
     public OnLoadCompletionListener getOnLoadCompleteListener() {
         log("getOnLoadCompleteListener");
         return null;
+    }
+
+    @Override
+    public void onVisible() {
+
+    }
+
+    @Override
+    public void onInvisible() {
+
     }
 
     private void log(String msg) {

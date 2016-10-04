@@ -1,4 +1,4 @@
-package com.shopgun.android.verso.sample;
+package com.shopgun.android.verso.sample.imageview;
 
 import android.content.Context;
 import android.os.Parcel;
@@ -54,6 +54,17 @@ public class CatalogPublication implements VersoPublication {
         public OnLoadCompletionListener getOnLoadCompleteListener() {
             return null;
         }
+
+        @Override
+        public void onVisible() {
+
+        }
+
+        @Override
+        public void onInvisible() {
+
+        }
+
 
     }
 

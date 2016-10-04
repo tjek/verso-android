@@ -7,4 +7,6 @@ public interface VersoPageView {
     interface OnLoadCompletionListener {
         void onLoaded(VersoPageView view);
     }
+    void onVisible();
+    void onInvisible();
 }

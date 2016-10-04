@@ -1,4 +1,4 @@
-package com.shopgun.android.verso.sample;
+package com.shopgun.android.verso.sample.imageview;
 
 import java.util.ArrayList;
 import java.util.List;
