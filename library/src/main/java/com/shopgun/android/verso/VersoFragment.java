@@ -1,5 +1,6 @@
 package com.shopgun.android.verso;
 
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.log.L;
 
@@ -38,6 +40,10 @@ public class VersoFragment extends Fragment {
     VersoViewPager mVersoViewPager;
     VersoAdapter mVersoAdapter;
 
+    HashSet<Integer> mCurrentVisiblePages = new HashSet<>();
+    Rect mViewPagerHitRect = new Rect();
+    int[] mOutLocation = new int[2];
+
     OnPageChangeListener mPageChangeListener;
     OnZoomListener mZoomListener;
     OnPanListener mPanListener;
@@ -64,10 +70,41 @@ public class VersoFragment extends Fragment {
         mVersoAdapter.setOnLongTapListener(dispatcher);
         mVersoAdapter.setOnZoomListener(dispatcher);
         mVersoAdapter.setOnPanListener(dispatcher);
+        VersoOnLayoutChanged changedListener = new VersoOnLayoutChanged();
+        mVersoViewPager.addOnLayoutChangeListener(changedListener);
+        mVersoViewPager.getViewTreeObserver().addOnPreDrawListener(changedListener);
         mVersoViewPager.setOnPageChangeListener(new PageChangeDispatcher());
         mVersoViewPager.setAdapter(mVersoAdapter);
         mVersoViewPager.setPageMargin(mVersoPublication.getConfiguration().getSpreadMargin());
         return mVersoViewPager;
+    }
+
+    private class VersoOnLayoutChanged implements View.OnLayoutChangeListener, ViewTreeObserver.OnPreDrawListener {
+
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
+                updateHitRect(mVersoViewPager, mViewPagerHitRect, mOutLocation);
+                updateVisiblePages();
+            }
+        }
+
+        @Override
+        public boolean onPreDraw() {
+            updateVisiblePages();
+            if (!mCurrentVisiblePages.isEmpty()) {
+                if (mPageChangeListener != null) {
+                    VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
+                    int position = mVersoViewPager.getCurrentItem();
+                    int[] pages = c.getSpreadProperty(position).getPages();
+                    mPageChangeListener.onPagesChanged(position, pages, position, pages);
+                }
+                mVersoViewPager.getViewTreeObserver().removeOnPreDrawListener(this);
+                return true;
+            }
+            return false;
+        }
+
     }
 
     private String pageScrollStateToString(int state) {
@@ -141,14 +178,12 @@ public class VersoFragment extends Fragment {
         int mState = ViewPager.SCROLL_STATE_IDLE;
         int mChangePosition = 0;
         int mScrollPosition = 0;
-        HashSet<Integer> mCurrentVisiblePages = new HashSet<>();
-        Rect mViewPagetHitRect = new Rect();
         Rect mFragmentHitRect = new Rect();
-        int[] mPos = new int[2];
         float mLastOffset = 0;
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//            printScrolled("scroll", position, positionOffset, positionOffsetPixels);
             // First check if we need to update scroll position
             updateScrollPosition(position, positionOffset, positionOffsetPixels);
             // Then check if there is any change in visible and removed pages (from individual fragments)
@@ -165,15 +200,14 @@ public class VersoFragment extends Fragment {
          * @param positionOffsetPixels Value in pixels indicating the offset from position.
          */
         private void updateScrollPosition(int position, float positionOffset, int positionOffsetPixels) {
-
             if (position < mScrollPosition ||
                     (position == mScrollPosition && positionOffset < mLastOffset)) {
                 // Scrolling left
                 int nextPos = mScrollPosition-1;
                 if (nextPos >= 0) {
-                    VersoPageViewFragment f = mVersoAdapter.getVersoFragment(null, nextPos);
-                    updateFragmentHitRect(f);
-                    if (mFragmentHitRect.centerX() >= mViewPagetHitRect.centerX()
+                    VersoPageViewFragment f = mVersoAdapter.getVersoFragment(mVersoViewPager, nextPos);
+                    updateHitRect(f.getView(), mFragmentHitRect, mOutLocation);
+                    if (mFragmentHitRect.centerX() >= mViewPagerHitRect.centerX()
                             || (position == 0 && positionOffsetPixels <= 0)) {
                         scrollTo(nextPos);
                     }
@@ -182,32 +216,14 @@ public class VersoFragment extends Fragment {
                     (position == mScrollPosition && positionOffset > mLastOffset)) {
                 // Scrolling right
                 int nextPos = mScrollPosition+1;
-                VersoPageViewFragment f = mVersoAdapter.getVersoFragment(null, nextPos);
-                updateFragmentHitRect(f);
-                if (mFragmentHitRect.centerX() <= mViewPagetHitRect.centerX()
-                        || (nextPos == mVersoAdapter.getCount()-1 && mFragmentHitRect.right <= mViewPagetHitRect.right)) {
+                VersoPageViewFragment f = mVersoAdapter.getVersoFragment(mVersoViewPager, nextPos);
+                updateHitRect(f.getView(), mFragmentHitRect, mOutLocation);
+                if (mFragmentHitRect.centerX() <= mViewPagerHitRect.centerX()
+                        || (nextPos == mVersoAdapter.getCount()-1 && mFragmentHitRect.right <= mViewPagerHitRect.right)) {
                     scrollTo(nextPos);
                 }
-            } else {
-                // initializer and bounce effect
-                mVersoViewPager.getHitRect(mViewPagetHitRect);
-                mVersoViewPager.getLocationOnScreen(mPos);
-                mViewPagetHitRect.offsetTo(mPos[0], mPos[1]);
             }
-
             mLastOffset = positionOffset;
-
-        }
-
-        private void updateFragmentHitRect(VersoPageViewFragment f) {
-            View v = f.getView();
-            if (v != null) {
-                v.getHitRect(mFragmentHitRect);
-                v.getLocationOnScreen(mPos);
-                mFragmentHitRect.offsetTo(mPos[0], mPos[1]);
-            } else {
-                mFragmentHitRect.set(0,0,0,0);
-            }
         }
 
         private void printScrolled(String msg, int position, float positionOffset, int positionOffsetPixels) {
@@ -227,37 +243,6 @@ public class VersoFragment extends Fragment {
             }
         }
 
-        /**
-         * Determine if there is any change to the currently visible VersoPageView's in the ViewPager.
-         * If so,  callbacks will be triggered.
-         */
-        @SuppressWarnings("unchecked")
-        private void updateVisiblePages() {
-            if (mPageChangeListener != null) {
-                List<VersoPageViewFragment> fragments = mVersoAdapter.getVersoFragments();
-                HashSet<Integer> currentPages = new HashSet<>();
-                for (VersoPageViewFragment f : fragments) {
-                    f.getVisiblePages(mViewPagetHitRect, currentPages);
-                }
-                Collection<Integer> added = diff(currentPages, mCurrentVisiblePages);
-                Collection<Integer> removed = diff(mCurrentVisiblePages, currentPages);
-                if (!added.isEmpty() || !removed.isEmpty()) {
-                    List<Integer> pages = new ArrayList<>();
-                    for (Integer p : currentPages) {
-                        pages.add(p);
-                    }
-                    Collections.sort(pages);
-                    int[] p = collectionToIntArray(pages);
-                    int[] a = collectionToIntArray(added);
-                    int[] r = collectionToIntArray(removed);
-
-                    mPageChangeListener.onVisiblePageIndexesChanged(p, a, r);
-                    mCurrentVisiblePages.clear();
-                    mCurrentVisiblePages.addAll(currentPages);
-                }
-            }
-        }
-
         @Override
         public void onPageSelected(int position) {
             moveTo(position);
@@ -270,7 +255,7 @@ public class VersoFragment extends Fragment {
         }
 
         private void moveTo(int position) {
-            if (mState == ViewPager.SCROLL_STATE_IDLE && position != mChangePosition) {
+            if (mState == ViewPager.SCROLL_STATE_IDLE && mChangePosition != position ) {
                 int prevPos = mChangePosition;
                 mChangePosition = position;
                 if (mPageChangeListener != null) {
@@ -284,13 +269,68 @@ public class VersoFragment extends Fragment {
 
     }
 
-    private static int[] collectionToIntArray(Collection<Integer> collection) {
+    /**
+     * Determine if there is any change to the currently visible VersoPageView's in the ViewPager.
+     * If so,  callbacks will be triggered.
+     */
+    @SuppressWarnings("unchecked")
+    private void updateVisiblePages() {
+        List<VersoPageViewFragment> fragments = mVersoAdapter.getVersoFragments();
+        HashSet<Integer> currentPages = new HashSet<>();
+        for (VersoPageViewFragment f : fragments) {
+            f.getVisiblePages(mViewPagerHitRect, currentPages);
+        }
+        Collection<Integer> added = diff(currentPages, mCurrentVisiblePages);
+        Collection<Integer> removed = diff(mCurrentVisiblePages, currentPages);
+        if (!added.isEmpty() || !removed.isEmpty()) {
+            // There is new state in visible pages, we need to update
+            mCurrentVisiblePages.clear();
+            mCurrentVisiblePages.addAll(currentPages);
+            if (mPageChangeListener != null) {
+                mPageChangeListener.onVisiblePageIndexesChanged(
+                        getVisiblePages(),
+                        collectionToArray(added),
+                        collectionToArray(removed));
+            }
+        }
+    }
+
+    private static void updateHitRect(View view, Rect rect, int[] out) {
+        if (view != null) {
+            view.getHitRect(rect);
+            view.getLocationOnScreen(out);
+            rect.offsetTo(out[0], out[1]);
+        } else {
+            rect.set(0,0,0,0);
+        }
+    }
+
+    /**
+     * Takes a {@link Collection} of {@link Integer}, sorts it in ascending order and converts it to an array.
+     * @param collection A {@link Collection} to convert
+     * @return An array
+     */
+    private static int[] sortCollection(Collection<Integer> collection) {
+        List<Integer> ints = new ArrayList<>();
+        for (Integer i : collection) {
+            if (i != null) {
+                ints.add(i);
+            }
+        }
+        Collections.sort(ints);
+        return collectionToArray(ints);
+    }
+
+    /**
+     * Takes a {@link Collection} of {@link Integer} and converts it to an array.
+     * @param collection A {@link Collection} to convert
+     * @return An array
+     */
+    private static int[] collectionToArray(Collection<Integer> collection) {
         int[] tmp = new int[collection.size()];
-        Iterator<Integer> it = collection.iterator();
         int i = 0;
-        while (it.hasNext()) {
+        for (Iterator<Integer> it = collection.iterator(); it.hasNext(); i++) {
             tmp[i] = it.next();
-            i++;
         }
         return tmp;
     }
@@ -310,6 +350,66 @@ public class VersoFragment extends Fragment {
             }
         }
         return result;
+    }
+
+    /**
+     * Get the currently visible pages in the {@link VersoFragment}
+     * @return the visible pages
+     */
+    public int[] getVisiblePages() {
+        return sortCollection(mCurrentVisiblePages);
+    }
+
+    public int[] getActivePages() {
+        int position = mVersoViewPager.getCurrentItem();
+        return mVersoPublication.getConfiguration().getSpreadProperty(position).getPages();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Configuration config = getResources().getConfiguration();
+        super.onConfigurationChanged(newConfig);
+        if (config.orientation != newConfig.orientation) {
+            // Do work
+            // To correctly destroy the state of the VersoAdapter
+            // we will mimic the lifecycle of a fragment being destroyed
+            // and restored.
+            internalPause();
+            Bundle b = new Bundle();
+            onSaveInstanceState(b);
+            onRestoreState(b);
+//            mSavedInstanceState = null;
+            internalResume();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        internalResume();
+    }
+
+    private void internalResume() {
+        updateVisiblePages();
+    }
+
+    @Override
+    public void onPause() {
+        internalPause();
+        super.onPause();
+    }
+
+    private void internalPause() {
+
+    }
+
+    private void onRestoreState(Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     private class Dispatcher implements

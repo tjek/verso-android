@@ -61,7 +61,7 @@ public class VersoPageViewFragment extends Fragment {
             mProperty = mConfig.getSpreadProperty(mPosition);
             mPages = mProperty.getPages();
             if (mPages.length == 0) {
-                VersoLog.d(TAG, "There are no pages in the current spread, at position " + mPosition + ". No content will be displayed");
+                VersoLog.i(TAG, "No pages in VersoSpreadProperty " + mPosition + ". No content will be displayed.");
             }
         }
     }
