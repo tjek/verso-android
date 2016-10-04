@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import com.shopgun.android.utils.log.L;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -238,17 +239,17 @@ public class VersoFragment extends Fragment {
                 for (VersoPageViewFragment f : fragments) {
                     f.getVisiblePages(mViewPagetHitRect, currentPages);
                 }
-                List<Integer> added = diffHashSet(currentPages, mCurrentVisiblePages);
-                List<Integer> removed = diffHashSet(mCurrentVisiblePages, currentPages);
+                Collection<Integer> added = diff(currentPages, mCurrentVisiblePages);
+                Collection<Integer> removed = diff(mCurrentVisiblePages, currentPages);
                 if (!added.isEmpty() || !removed.isEmpty()) {
                     List<Integer> pages = new ArrayList<>();
                     for (Integer p : currentPages) {
                         pages.add(p);
                     }
                     Collections.sort(pages);
-                    int[] p = toInt(pages);
-                    int[] a = toInt(added);
-                    int[] r = toInt(removed);
+                    int[] p = collectionToIntArray(pages);
+                    int[] a = collectionToIntArray(added);
+                    int[] r = collectionToIntArray(removed);
 
                     mPageChangeListener.onVisiblePageIndexesChanged(p, a, r);
                     mCurrentVisiblePages.clear();
@@ -283,21 +284,29 @@ public class VersoFragment extends Fragment {
 
     }
 
-    private static int[] toInt(List<Integer> list) {
-        int[] tmp = new int[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            tmp[i] = list.get(i);
+    private static int[] collectionToIntArray(Collection<Integer> collection) {
+        int[] tmp = new int[collection.size()];
+        Iterator<Integer> it = collection.iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            tmp[i] = it.next();
+            i++;
         }
         return tmp;
     }
 
-    private static <T> List<T> diffHashSet(HashSet<T> lhs, HashSet<T> rhs) {
-        List<T> result = new ArrayList<>();
-        Iterator<T> it = lhs.iterator();
-        while (it.hasNext()) {
-            T p = it.next();
-            if (!rhs.contains(p)) {
-                result.add(p);
+    /**
+     * Finds the diff between two {@link Collection}'s, so elements found in {@code lhs} but not in
+     * {@code rhs} will be added to the result set.
+     * @param lhs {@link Collection} to find new elements in
+     * @param rhs {@link Collection} diff against
+     * @return A list containing the result of the diff
+     */
+    private static <T> Collection<T> diff(Collection<T> lhs, Collection<T> rhs) {
+        Collection<T> result = new ArrayList<>();
+        for (T t : lhs) {
+            if (!rhs.contains(t)) {
+                result.add(t);
             }
         }
         return result;
