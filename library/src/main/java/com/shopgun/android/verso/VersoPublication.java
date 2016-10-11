@@ -1,5 +1,6 @@
 package com.shopgun.android.verso;
 
+import android.content.res.Configuration;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -15,5 +16,7 @@ public interface VersoPublication extends Parcelable {
     @NonNull View getPageView(ViewGroup container, int page);
 
     @NonNull VersoSpreadConfiguration getConfiguration();
+
+    void onConfigurationChanged(Configuration newConfig);
 
 }

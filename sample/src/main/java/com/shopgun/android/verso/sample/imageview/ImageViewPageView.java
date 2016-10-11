@@ -10,15 +10,15 @@ import com.shopgun.android.verso.VersoPageView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-public class CatalogPageView extends ImageView implements VersoPageView {
+public class ImageViewPageView extends ImageView implements VersoPageView {
 
-    public static final String TAG = CatalogPageView.class.getSimpleName();
+    public static final String TAG = ImageViewPageView.class.getSimpleName();
 
     private final CatalogPage mCatalogPage;
     private Target mViewTarget;
     private Target mZoomTarget;
 
-    public CatalogPageView(Context context, CatalogPage catalogPage) {
+    public ImageViewPageView(Context context, CatalogPage catalogPage) {
         super(context);
         mCatalogPage = catalogPage;
         setAdjustViewBounds(true);

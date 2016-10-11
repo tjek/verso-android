@@ -5,11 +5,16 @@ import android.content.Context;
 
 public class VersoSampleApp extends Application {
 
-    public static Context context;
+    public static VersoSampleApp mVersoSampleApp;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
+        mVersoSampleApp = this;
     }
+
+    public static Context getContext() {
+        return mVersoSampleApp.getApplicationContext();
+    }
+
 }

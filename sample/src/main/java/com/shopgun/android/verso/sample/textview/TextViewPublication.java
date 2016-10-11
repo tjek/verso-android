@@ -1,6 +1,7 @@
 package com.shopgun.android.verso.sample.textview;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -57,6 +58,11 @@ public class TextViewPublication implements VersoPublication {
             return new SpreadPropertyImpl(new int[]{spreadPosition}, 0.8f, 4.0f);
         }
 
+        @Override
+        public int getSpreadPositionFromPage(int page) {
+            return page;
+        }
+
     }
 
     private class VersoTextView extends TextView implements VersoPageView {
@@ -95,6 +101,11 @@ public class TextViewPublication implements VersoPublication {
     @Override
     public VersoSpreadConfiguration getConfiguration() {
         return mConfiguration;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+
     }
 
     @Override

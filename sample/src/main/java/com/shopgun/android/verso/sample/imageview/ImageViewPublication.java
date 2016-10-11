@@ -1,6 +1,7 @@
 package com.shopgun.android.verso.sample.imageview;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -10,26 +11,30 @@ import android.widget.TextView;
 import com.shopgun.android.verso.VersoPageView;
 import com.shopgun.android.verso.VersoPublication;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
+import com.shopgun.android.verso.sample.VersoSampleApp;
 
-public class CatalogPublication implements VersoPublication {
+import java.util.List;
 
-    public static final String TAG = CatalogPublication.class.getSimpleName();
+public class ImageViewPublication implements VersoPublication {
 
-    private CatalogSpreadConfiguration mConfiguration;
+    public static final String TAG = ImageViewPublication.class.getSimpleName();
 
-    public CatalogPublication() {
-        mConfiguration = new CatalogSpreadConfiguration();
-        mConfiguration.setOutro(true);
+    List<CatalogPage> mPages;
+    private ImageViewSpreadConfiguration mConfiguration;
+
+    public ImageViewPublication() {
+        mPages = CatalogPage.create();
+        mConfiguration = new ImageViewSpreadConfiguration(mPages.size(), VersoSampleApp.getContext());
     }
 
     @NonNull
     @Override
     public View getPageView(ViewGroup container, int page) {
-        try {
-            CatalogPage catalogPage = mConfiguration.mPages.get(page-1);
-            return new CatalogPageView(container.getContext(), catalogPage);
-        } catch (Exception e) {
+        CatalogPage catalogPage = mPages.get(page);
+        if (catalogPage.page == -1) {
             return new Outro(container.getContext());
+        } else {
+            return new ImageViewPageView(container.getContext(), catalogPage);
         }
     }
 
@@ -75,6 +80,11 @@ public class CatalogPublication implements VersoPublication {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        mConfiguration = new ImageViewSpreadConfiguration(mPages.size(), newConfig);
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
@@ -83,19 +93,19 @@ public class CatalogPublication implements VersoPublication {
     public void writeToParcel(Parcel dest, int flags) {
     }
 
-    protected CatalogPublication(Parcel in) {
+    protected ImageViewPublication(Parcel in) {
         this();
     }
 
-    public static final Creator<CatalogPublication> CREATOR = new Creator<CatalogPublication>() {
+    public static final Creator<ImageViewPublication> CREATOR = new Creator<ImageViewPublication>() {
         @Override
-        public CatalogPublication createFromParcel(Parcel source) {
-            return new CatalogPublication(source);
+        public ImageViewPublication createFromParcel(Parcel source) {
+            return new ImageViewPublication(source);
         }
 
         @Override
-        public CatalogPublication[] newArray(int size) {
-            return new CatalogPublication[size];
+        public ImageViewPublication[] newArray(int size) {
+            return new ImageViewPublication[size];
         }
     };
 }

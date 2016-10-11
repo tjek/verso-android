@@ -36,6 +36,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
         VersoFragment fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
         if (fragment == null) {
             fragment = VersoFragment.newInstance(getPublication());
+            fragment.setOverscrollDecoreBounce(true);
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.verso, fragment, FRAG_TAG)

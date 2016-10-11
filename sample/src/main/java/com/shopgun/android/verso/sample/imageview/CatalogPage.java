@@ -9,7 +9,7 @@ public class CatalogPage {
 
     public static List<CatalogPage> create() {
         ArrayList<CatalogPage> pages = new ArrayList<>();
-        for (int i = 1; i < 7 ; i++) {
+        for (int i = 1; i < 9 ; i++) {
             pages.add(new CatalogPage(i));
         }
         return pages;

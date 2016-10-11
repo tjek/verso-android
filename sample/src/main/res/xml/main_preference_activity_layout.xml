@@ -25,7 +25,15 @@
             android:title="ImageView Activity">
             <intent
                 android:targetPackage="com.shopgun.android.verso.sample"
-                android:targetClass="com.shopgun.android.verso.sample.imageview.CatalogActivity"/>
+                android:targetClass="com.shopgun.android.verso.sample.imageview.ImageViewActivity"/>
+        </Preference>
+
+        <Preference
+            android:key="pref_main_imageview_configchange"
+            android:title="ImageView ConfigChange Activity">
+            <intent
+                android:targetPackage="com.shopgun.android.verso.sample"
+                android:targetClass="com.shopgun.android.verso.sample.imageview.ImageViewConfigChangeActivity"/>
         </Preference>
 
         <Preference

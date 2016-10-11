@@ -5,4 +5,5 @@ public interface VersoSpreadConfiguration {
     int getSpreadCount();
     int getSpreadMargin();
     VersoSpreadProperty getSpreadProperty(int spreadPosition);
+    int getSpreadPositionFromPage(int page);
 }
