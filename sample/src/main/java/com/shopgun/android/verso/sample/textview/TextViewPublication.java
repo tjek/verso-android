@@ -56,7 +56,7 @@ public class TextViewPublication implements VersoPublication {
 
         @Override
         public VersoSpreadProperty getSpreadProperty(int spreadPosition) {
-            return new SpreadPropertyImpl(new int[]{spreadPosition}, 0.8f, 4.0f);
+            return new SpreadPropertyImpl(new int[]{spreadPosition}, 0.8f, 1.0f, (spreadPosition % 2 == 0 ? 1.0f : 4.0f));
         }
 
         @Override

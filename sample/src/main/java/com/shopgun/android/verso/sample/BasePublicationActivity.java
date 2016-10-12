@@ -186,9 +186,6 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            finish();
-        }
+        finish();
     }
 }

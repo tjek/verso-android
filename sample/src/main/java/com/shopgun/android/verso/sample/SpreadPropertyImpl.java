@@ -6,11 +6,13 @@ public class SpreadPropertyImpl implements VersoSpreadProperty {
 
     private final int[] mPages;
     private final float mWidth;
+    private final float mMinZoomScale;
     private final float mMaxZoomScale;
 
-    public SpreadPropertyImpl(int[] pages, float width, float maxZoomScale) {
+    public SpreadPropertyImpl(int[] pages, float width, float minZoomScale, float maxZoomScale) {
         mPages = pages;
         mWidth = width;
+        mMinZoomScale = minZoomScale;
         mMaxZoomScale = maxZoomScale;
     }
 
@@ -29,4 +31,8 @@ public class SpreadPropertyImpl implements VersoSpreadProperty {
         return mMaxZoomScale;
     }
 
+    @Override
+    public float getMinZoomScale() {
+        return mMinZoomScale;
+    }
 }

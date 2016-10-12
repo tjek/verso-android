@@ -48,7 +48,7 @@ public class ImageViewSpreadConfiguration implements VersoSpreadConfiguration {
         int[] pages = positionToPages(spreadPosition);
         boolean narrow = spreadPosition == 0 || getSpreadCount()-1 == spreadPosition;
         float w = narrow ? 0.6f : mWidth[spreadPosition];
-        return new SpreadPropertyImpl(pages, w, 4.0f);
+        return new SpreadPropertyImpl(pages, w, 1.0f, (narrow ? 1.0f : 4.0f));
     }
 
     @Override

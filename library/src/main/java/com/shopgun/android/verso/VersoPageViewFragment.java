@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
+import com.shopgun.android.utils.NumberUtils;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
@@ -80,12 +81,18 @@ public class VersoPageViewFragment extends Fragment {
         mSpreadLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
         mSpreadLayout.setOnLongTapListener(new LongTapDispatcher());
 
+        boolean zoom = !NumberUtils.isEqual(mProperty.getMaxZoomScale(), mProperty.getMinZoomScale());
+        mSpreadLayout.setAllowZoom(zoom);
+        mSpreadLayout.setMinScale(mProperty.getMinZoomScale());
+        mSpreadLayout.setMaxScale(mProperty.getMaxZoomScale());
+
         mPageContainer = (VersoHorizontalLayout) mSpreadLayout.findViewById(R.id.verso_pages_container);
         for (int page : mPages) {
             View view = mVersoPublication.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {
                 throw new IllegalArgumentException("The PageView must implement VersoPageView");
             }
+            VersoPageView vpv = (VersoPageView) view;
             mPageContainer.addView(view);
         }
 
@@ -116,7 +123,7 @@ public class VersoPageViewFragment extends Fragment {
         @Override
         public void onGlobalLayout() {
             if (mSpreadOverlay != null) {
-                Rect r = getChildPosition(mPageContainer);
+                Rect r = getChildPosition();
                 if (r.left != mSpreadOverlay.getLeft() ||
                         r.top != mSpreadOverlay.getTop() ||
                         r.right != mSpreadOverlay.getRight() ||
@@ -132,11 +139,11 @@ public class VersoPageViewFragment extends Fragment {
 
     }
 
-    public static Rect getChildPosition(ViewGroup view) {
+    private Rect getChildPosition() {
         Rect rect = new Rect();
-        int childCount = view.getChildCount();
+        int childCount = mPageContainer.getChildCount();
         for (int i = 0; i < childCount; i++) {
-            final View child = view.getChildAt(i);
+            final View child = mPageContainer.getChildAt(i);
             if (i == 0) {
                 // First item, just set the rect
                 rect.set(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());

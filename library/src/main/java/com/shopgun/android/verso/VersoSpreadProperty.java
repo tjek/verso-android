@@ -4,4 +4,5 @@ public interface VersoSpreadProperty {
     int[] getPages();
     float getWidth();
     float getMaxZoomScale();
+    float getMinZoomScale();
 }
