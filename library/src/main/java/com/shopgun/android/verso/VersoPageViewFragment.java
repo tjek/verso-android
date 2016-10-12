@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.shopgun.android.verso.utils.VersoLog;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
@@ -59,9 +58,6 @@ public class VersoPageViewFragment extends Fragment {
             mConfig = mVersoPublication.getConfiguration();
             mProperty = mConfig.getSpreadProperty(mPosition);
             mPages = mProperty.getPages();
-            if (mPages.length == 0) {
-                VersoLog.i(TAG, "No pages in VersoSpreadProperty " + mPosition + ". No content will be displayed.");
-            }
         }
     }
 
