@@ -169,6 +169,9 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     public void getVisiblePages(Rect bounds, HashSet<Integer> result) {
+        if (mSpreadLayout == null) {
+            return;
+        }
         Rect mHitBounds = new Rect();
         int[] pos = new int[2];
         int count = mPageContainer.getChildCount();

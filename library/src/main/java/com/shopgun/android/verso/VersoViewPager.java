@@ -25,4 +25,8 @@ public class VersoViewPager extends CenteredViewPager {
         super.setAdapter(adapter);
     }
 
+    public VersoAdapter getVersoAdapter() {
+        return (VersoAdapter) getAdapter();
+    }
+
 }

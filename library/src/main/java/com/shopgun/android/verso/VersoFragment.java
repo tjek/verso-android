@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.log.L;
-import com.shopgun.android.utils.log.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +32,7 @@ public class VersoFragment extends Fragment {
     public static final String PUBLICATION = "publication";
     public static final String STATE_OVERSCROLL_DECORE = "state_overscroll_decore";
     public static final String STATE_CURRENT_PAGES = "state_active_pages";
+    public static final String STATE_CURRENT_VISIBLE_PAGES = "state_visible_pages";
 
     public static VersoFragment newInstance(VersoPublication publication) {
         Bundle arguments = new Bundle();
@@ -56,7 +56,7 @@ public class VersoFragment extends Fragment {
     int[] mOutLocation = new int[2];
 
     PageChangeDispatcher mPageChangeDispatcher;
-    Dispatcher mDispatcher;
+    PageViewEventDispatcher mDispatcher;
     VersoOnLayoutChanged mVersoOnLayoutChanged;
 
     OnPageChangeListener mPageChangeListener;
@@ -78,7 +78,6 @@ public class VersoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        L.d(TAG, "onCreateView");
         mVersoViewPager = (VersoViewPager) inflater.inflate(R.layout.verso_fragment, container, false);
 
         mVersoOnLayoutChanged = new VersoOnLayoutChanged();
@@ -88,9 +87,6 @@ public class VersoFragment extends Fragment {
         mPageChangeDispatcher = new PageChangeDispatcher();
         mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
         mVersoViewPager.setPageMargin(mVersoPublication.getConfiguration().getSpreadMargin());
-
-        // In all cases remove the flex margins
-        mVersoViewPager.setFlexibleMargin(0f);
 
         if (mSavedInstanceState == null) {
             mSavedInstanceState = savedInstanceState;
@@ -112,9 +108,6 @@ public class VersoFragment extends Fragment {
         @Override
         public boolean onPreDraw() {
             updateVisiblePages();
-            if (mVersoViewPager.getCurrentItem() != getPosition()) {
-                setPosition(getPosition());
-            }
             if (!mCurrentVisiblePages.isEmpty()) {
                 if (mPageChangeListener != null) {
                     VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
@@ -393,36 +386,35 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        LogUtil.printCallingMethod(L.getLogger());
         super.onConfigurationChanged(newConfig);
         if (mCurrentOrientation != newConfig.orientation) {
             // To correctly destroy the state of the VersoAdapter
             // we will mimic the lifecycle of a fragment being destroyed and restored.
-            internalPause();
+            onInternalPause();
             onSaveInstanceState(new Bundle());
             mVersoPublication.onConfigurationChanged(newConfig);
-            internalResume();
+            onInternalResume();
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        internalResume();
+        onInternalResume();
     }
 
-    private void internalResume() {
-        LogUtil.printCallingMethod(L.getLogger());
+    private void onInternalResume() {
         mCurrentOrientation = getResources().getConfiguration().orientation;
         setAdapter();
+
         onRestoreState(mSavedInstanceState);
-        updateVisiblePages();
+
     }
 
     private void setAdapter() {
         if (mVersoAdapter == null) {
             mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoPublication);
-            mDispatcher = new Dispatcher();
+            mDispatcher = new PageViewEventDispatcher();
             mVersoAdapter.setOnTapListener(mDispatcher);
             mVersoAdapter.setOnDoubleTapListener(mDispatcher);
             mVersoAdapter.setOnLongTapListener(mDispatcher);
@@ -434,12 +426,11 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onPause() {
-        internalPause();
+        onInternalPause();
         super.onPause();
     }
 
-    private void internalPause() {
-        LogUtil.printCallingMethod(L.getLogger());
+    private void onInternalPause() {
         clearAdapter();
     }
 
@@ -455,6 +446,8 @@ public class VersoFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putBoolean(STATE_OVERSCROLL_DECORE, mOverscrollDecoreBounce);
         outState.putIntArray(STATE_CURRENT_PAGES, getCurrentPages());
+        ArrayList<Integer> pages = new ArrayList<>(mCurrentVisiblePages);
+        outState.putIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES, pages);
         mSavedInstanceState = outState;
     }
 
@@ -470,6 +463,11 @@ public class VersoFragment extends Fragment {
 
         if (savedInstanceState != null) {
             mOverscrollDecoreBounce = savedInstanceState.getBoolean(STATE_OVERSCROLL_DECORE);
+
+            mCurrentVisiblePages.clear();
+            ArrayList<Integer> pages = savedInstanceState.getIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES);
+            mCurrentVisiblePages.addAll(pages);
+
             int[] currentPages = savedInstanceState.getIntArray(STATE_CURRENT_PAGES);
             if (currentPages != null && currentPages.length > 0) {
                 setPage(currentPages[0]);
@@ -484,7 +482,7 @@ public class VersoFragment extends Fragment {
         mSavedInstanceState = null;
     }
 
-    private class Dispatcher implements
+    private class PageViewEventDispatcher implements
             VersoPageViewFragment.OnTapListener,
             VersoPageViewFragment.OnDoubleTapListener,
             VersoPageViewFragment.OnLongTapListener,
