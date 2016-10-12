@@ -1,16 +1,14 @@
 package com.shopgun.android.verso.sample.imageview;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.shopgun.android.verso.VersoPageView;
 import com.shopgun.android.verso.VersoPublication;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
+import com.shopgun.android.verso.sample.SpreadLayoutImpl;
 import com.shopgun.android.verso.sample.VersoSampleApp;
 
 import java.util.List;
@@ -31,46 +29,7 @@ public class ImageViewPublication implements VersoPublication {
     @Override
     public View getPageView(ViewGroup container, int page) {
         CatalogPage catalogPage = mPages.get(page);
-        if (catalogPage.page == -1) {
-            return new Outro(container.getContext());
-        } else {
-            return new ImageViewPageView(container.getContext(), catalogPage);
-        }
-    }
-
-    class Outro extends TextView implements VersoPageView {
-
-        public Outro(Context context) {
-            super(context);
-            setText("My Outro");
-        }
-
-        @Override
-        public boolean onZoom(float scale) {
-            return false;
-        }
-
-        @Override
-        public void setOnCompletionListener() {
-
-        }
-
-        @Override
-        public OnLoadCompletionListener getOnLoadCompleteListener() {
-            return null;
-        }
-
-        @Override
-        public void onVisible() {
-
-        }
-
-        @Override
-        public void onInvisible() {
-
-        }
-
-
+        return new ImageViewPageView(container.getContext(), catalogPage);
     }
 
     @NonNull
@@ -82,6 +41,11 @@ public class ImageViewPublication implements VersoPublication {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         mConfiguration = new ImageViewSpreadConfiguration(mPages.size(), newConfig);
+    }
+
+    @Override
+    public View getSpreadOverlay(ViewGroup container, int[] pages) {
+        return new SpreadLayoutImpl(container.getContext(), pages);
     }
 
     @Override

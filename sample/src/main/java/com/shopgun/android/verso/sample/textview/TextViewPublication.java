@@ -13,6 +13,7 @@ import com.shopgun.android.verso.VersoPageView;
 import com.shopgun.android.verso.VersoPublication;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
 import com.shopgun.android.verso.VersoSpreadProperty;
+import com.shopgun.android.verso.sample.SpreadLayoutImpl;
 import com.shopgun.android.verso.sample.SpreadPropertyImpl;
 
 public class TextViewPublication implements VersoPublication {
@@ -106,6 +107,11 @@ public class TextViewPublication implements VersoPublication {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
 
+    }
+
+    @Override
+    public View getSpreadOverlay(ViewGroup container, int[] pages) {
+        return new SpreadLayoutImpl(container.getContext(), pages);
     }
 
     @Override

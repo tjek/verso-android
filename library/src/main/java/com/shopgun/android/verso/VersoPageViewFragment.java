@@ -6,9 +6,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
@@ -34,6 +37,7 @@ public class VersoPageViewFragment extends Fragment {
     // Views
     private VersoSpreadLayout mSpreadLayout;
     private VersoHorizontalLayout mPageContainer;
+    private View mSpreadOverlay;
 
     // Input data
     private VersoPublication mVersoPublication;
@@ -80,12 +84,78 @@ public class VersoPageViewFragment extends Fragment {
         for (int page : mPages) {
             View view = mVersoPublication.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {
-                throw new IllegalArgumentException("The view must implement VersoPageView");
+                throw new IllegalArgumentException("The PageView must implement VersoPageView");
             }
             mPageContainer.addView(view);
         }
+
+        mSpreadOverlay = mVersoPublication.getSpreadOverlay(mSpreadLayout, mPages);
+        if (mSpreadOverlay != null) {
+            if (!(mSpreadOverlay instanceof VersoSpreadOverlay)) {
+                throw new IllegalArgumentException("The SpreadOverlay must implement VersoSpreadOverlay");
+            }
+            mSpreadLayout.addView(mSpreadOverlay);
+        }
+
         return mSpreadLayout;
 
+    }
+
+    private static boolean layoutChanged(int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+        return left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mPageContainer.getViewTreeObserver().addOnGlobalLayoutListener(new OverlaySizer());
+    }
+
+    class OverlaySizer implements ViewTreeObserver.OnGlobalLayoutListener {
+
+        @Override
+        public void onGlobalLayout() {
+            if (mSpreadOverlay != null) {
+                Rect r = getChildPosition(mPageContainer);
+                if (r.left != mSpreadOverlay.getLeft() ||
+                        r.top != mSpreadOverlay.getTop() ||
+                        r.right != mSpreadOverlay.getRight() ||
+                        r.bottom != mSpreadOverlay.getBottom()) {
+                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mSpreadOverlay.getLayoutParams();
+                    lp.width = r.width();
+                    lp.height = r.height();
+                    lp.gravity = Gravity.CENTER;
+                    mSpreadOverlay.setLayoutParams(lp);
+                }
+            }
+        }
+
+    }
+
+    public static Rect getChildPosition(ViewGroup view) {
+        Rect rect = new Rect();
+        int childCount = view.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            final View child = view.getChildAt(i);
+            if (i == 0) {
+                // First item, just set the rect
+                rect.set(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+            } else {
+                if (rect.left > child.getLeft()) {
+                    rect.left = child.getLeft();
+                }
+                if (rect.top > child.getTop()) {
+                    rect.top = child.getTop();
+                }
+                if (rect.right < child.getRight()) {
+                    rect.right = child.getRight();
+                }
+                if (rect.bottom < child.getBottom()) {
+                    rect.bottom = child.getBottom();
+                }
+            }
+        }
+        return rect;
     }
 
     public void setOnTapListener(OnTapListener tapListener) {

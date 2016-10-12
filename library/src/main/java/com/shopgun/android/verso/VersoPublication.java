@@ -19,4 +19,6 @@ public interface VersoPublication extends Parcelable {
 
     void onConfigurationChanged(Configuration newConfig);
 
+    View getSpreadOverlay(ViewGroup container, int[] pages);
+
 }
