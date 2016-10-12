@@ -26,7 +26,7 @@ public class VersoPageViewFragment extends Fragment {
     private static final String VERSO_PUBLICATION_KEY = "verso_publication";
     private static final String VERSO_POSITION_KEY = "verso_position";
 
-    public static VersoPageViewFragment newInstance(VersoPublication publication, int position) {
+    public static VersoPageViewFragment newInstance(VersoSpreadConfiguration publication, int position) {
         Bundle arguments = new Bundle();
         arguments.putParcelable(VERSO_PUBLICATION_KEY, publication);
         arguments.putInt(VERSO_POSITION_KEY, position);
@@ -36,13 +36,12 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     // Views
-    private VersoSpreadLayout mSpreadLayout;
+    private ZoomLayout mZoomLayout;
     private VersoHorizontalLayout mPageContainer;
     private View mSpreadOverlay;
 
     // Input data
-    private VersoPublication mVersoPublication;
-    private VersoSpreadConfiguration mConfig;
+    private VersoSpreadConfiguration mVersoSpreadConfiguration;
     private VersoSpreadProperty mProperty;
     private int mPosition;
     private int[] mPages;
@@ -58,10 +57,9 @@ public class VersoPageViewFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mVersoPublication = getArguments().getParcelable(VERSO_PUBLICATION_KEY);
+            mVersoSpreadConfiguration = getArguments().getParcelable(VERSO_PUBLICATION_KEY);
             mPosition = getArguments().getInt(VERSO_POSITION_KEY);
-            mConfig = mVersoPublication.getConfiguration();
-            mProperty = mConfig.getSpreadProperty(mPosition);
+            mProperty = mVersoSpreadConfiguration.getSpreadProperty(mPosition);
             mPages = mProperty.getPages();
         }
     }
@@ -69,26 +67,26 @@ public class VersoPageViewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mSpreadLayout = (VersoSpreadLayout) inflater.inflate(R.layout.verso_page_layout, container, false);
+        mZoomLayout = (ZoomLayout) inflater.inflate(R.layout.verso_page_layout, container, false);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
             // scale operations on large bitmaps are horrible slow
             // for some reason, this works. LAYER_TYPE_SOFTWARE works too...
-            mSpreadLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            mZoomLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
-        mSpreadLayout.setOnZoomListener(new ZoomDispatcher());
-        mSpreadLayout.setOnPanListener(new PanDispatcher());
-        mSpreadLayout.setOnTapListener(new TapDispatcher());
-        mSpreadLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
-        mSpreadLayout.setOnLongTapListener(new LongTapDispatcher());
+        mZoomLayout.setOnZoomListener(new ZoomDispatcher());
+        mZoomLayout.setOnPanListener(new PanDispatcher());
+        mZoomLayout.setOnTapListener(new TapDispatcher());
+        mZoomLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
+        mZoomLayout.setOnLongTapListener(new LongTapDispatcher());
 
         boolean zoom = !NumberUtils.isEqual(mProperty.getMaxZoomScale(), mProperty.getMinZoomScale());
-        mSpreadLayout.setAllowZoom(zoom);
-        mSpreadLayout.setMinScale(mProperty.getMinZoomScale());
-        mSpreadLayout.setMaxScale(mProperty.getMaxZoomScale());
+        mZoomLayout.setAllowZoom(zoom);
+        mZoomLayout.setMinScale(mProperty.getMinZoomScale());
+        mZoomLayout.setMaxScale(mProperty.getMaxZoomScale());
 
-        mPageContainer = (VersoHorizontalLayout) mSpreadLayout.findViewById(R.id.verso_pages_container);
+        mPageContainer = (VersoHorizontalLayout) mZoomLayout.findViewById(R.id.verso_pages_container);
         for (int page : mPages) {
-            View view = mVersoPublication.getPageView(mPageContainer, page);
+            View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {
                 throw new IllegalArgumentException("The PageView must implement VersoPageView");
             }
@@ -96,20 +94,13 @@ public class VersoPageViewFragment extends Fragment {
             mPageContainer.addView(view);
         }
 
-        mSpreadOverlay = mVersoPublication.getSpreadOverlay(mSpreadLayout, mPages);
+        mSpreadOverlay = mVersoSpreadConfiguration.getSpreadOverlay(mZoomLayout, mPages);
         if (mSpreadOverlay != null) {
-            if (!(mSpreadOverlay instanceof VersoSpreadOverlay)) {
-                throw new IllegalArgumentException("The SpreadOverlay must implement VersoSpreadOverlay");
-            }
-            mSpreadLayout.addView(mSpreadOverlay);
+            mZoomLayout.addView(mSpreadOverlay);
         }
 
-        return mSpreadLayout;
+        return mZoomLayout;
 
-    }
-
-    private static boolean layoutChanged(int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        return left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom;
     }
 
     @Override
@@ -214,7 +205,7 @@ public class VersoPageViewFragment extends Fragment {
 
     private final Rect mDrawRect = new Rect();
     private void updateRect() {
-        RectF r = mSpreadLayout.getDrawRect();
+        RectF r = mZoomLayout.getDrawRect();
         mDrawRect.set(Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom));
     }
 
@@ -242,7 +233,7 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     public void getVisiblePages(Rect bounds, HashSet<Integer> result) {
-        if (mSpreadLayout == null) {
+        if (mZoomLayout == null) {
             return;
         }
         Rect mHitBounds = new Rect();

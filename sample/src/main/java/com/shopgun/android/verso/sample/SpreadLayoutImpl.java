@@ -5,11 +5,10 @@ import android.graphics.Color;
 import android.widget.TextView;
 
 import com.shopgun.android.utils.TextUtils;
-import com.shopgun.android.verso.VersoSpreadOverlay;
 
 import java.util.Random;
 
-public class SpreadLayoutImpl extends TextView implements VersoSpreadOverlay {
+public class SpreadLayoutImpl extends TextView {
 
     int[] mPages;
 

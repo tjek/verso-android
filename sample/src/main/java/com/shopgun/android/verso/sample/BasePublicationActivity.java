@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.verso.VersoFragment;
-import com.shopgun.android.verso.VersoPublication;
+import com.shopgun.android.verso.VersoSpreadConfiguration;
 import com.shopgun.android.verso.sample.textview.TextViewActivity;
 
 import java.util.Locale;
@@ -26,7 +26,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
     String mPanInfo = "no info";
     String mVisiblePagesInfo = "no info";
 
-    public abstract VersoPublication getPublication();
+    public abstract VersoSpreadConfiguration getPublication();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

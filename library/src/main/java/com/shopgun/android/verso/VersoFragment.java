@@ -34,7 +34,7 @@ public class VersoFragment extends Fragment {
     public static final String STATE_CURRENT_PAGES = "state_active_pages";
     public static final String STATE_CURRENT_VISIBLE_PAGES = "state_visible_pages";
 
-    public static VersoFragment newInstance(VersoPublication publication) {
+    public static VersoFragment newInstance(VersoSpreadConfiguration publication) {
         Bundle arguments = new Bundle();
         arguments.putParcelable(PUBLICATION, publication);
         VersoFragment fragment = new VersoFragment();
@@ -42,7 +42,7 @@ public class VersoFragment extends Fragment {
         return fragment;
     }
 
-    VersoPublication mVersoPublication;
+    VersoSpreadConfiguration mVersoSpreadConfiguration;
     VersoViewPager mVersoViewPager;
     VersoAdapter mVersoAdapter;
 
@@ -70,8 +70,8 @@ public class VersoFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mVersoPublication = getArguments().getParcelable(PUBLICATION);
-            mVersoPublication.onConfigurationChanged(getResources().getConfiguration());
+            mVersoSpreadConfiguration = getArguments().getParcelable(PUBLICATION);
+            mVersoSpreadConfiguration.onConfigurationChanged(getResources().getConfiguration());
         }
     }
 
@@ -86,7 +86,7 @@ public class VersoFragment extends Fragment {
 
         mPageChangeDispatcher = new PageChangeDispatcher();
         mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
-        mVersoViewPager.setPageMargin(mVersoPublication.getConfiguration().getSpreadMargin());
+        mVersoViewPager.setPageMargin(mVersoSpreadConfiguration.getSpreadMargin());
 
         if (mSavedInstanceState == null) {
             mSavedInstanceState = savedInstanceState;
@@ -110,8 +110,7 @@ public class VersoFragment extends Fragment {
             updateVisiblePages();
             if (!mCurrentVisiblePages.isEmpty()) {
                 if (mPageChangeListener != null) {
-                    VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
-                    int[] pages = c.getSpreadProperty(getPosition()).getPages();
+                    int[] pages = mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
                     mPageChangeListener.onPagesChanged(getPosition(), pages, getPosition(), pages);
                 }
                 mVersoViewPager.getViewTreeObserver().removeOnPreDrawListener(this);
@@ -186,9 +185,8 @@ public class VersoFragment extends Fragment {
             int prevPos = mScrollPosition;
             mScrollPosition = position;
             if (mPageChangeListener != null) {
-                VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
-                int[] previousPages = c.getSpreadProperty(prevPos).getPages();
-                int[] currentPages = c.getSpreadProperty(mScrollPosition).getPages();
+                int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
+                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mScrollPosition).getPages();
                 mPageChangeListener.onPagesScrolled(mScrollPosition, currentPages, prevPos, previousPages);
             }
         }
@@ -210,9 +208,8 @@ public class VersoFragment extends Fragment {
                 mCurrentPosition = position;
                 mScrollPosition = mCurrentPosition;
                 if (mPageChangeListener != null) {
-                    VersoSpreadConfiguration c = mVersoPublication.getConfiguration();
-                    int[] previousPages = c.getSpreadProperty(prevPos).getPages();
-                    int[] currentPages = c.getSpreadProperty(mCurrentPosition).getPages();
+                    int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
+                    int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mCurrentPosition).getPages();
                     mPageChangeListener.onPagesChanged(mCurrentPosition, currentPages, prevPos, previousPages);
                 }
             }
@@ -330,8 +327,7 @@ public class VersoFragment extends Fragment {
     }
 
     public int[] getCurrentPages() {
-        VersoSpreadConfiguration config = mVersoPublication.getConfiguration();
-        VersoSpreadProperty property = config.getSpreadProperty(getPosition());
+        VersoSpreadProperty property = mVersoSpreadConfiguration.getSpreadProperty(getPosition());
         return property.getPages();
     }
 
@@ -351,8 +347,7 @@ public class VersoFragment extends Fragment {
      */
     public void setPage(int page) {
         if (page >= 0) {
-            VersoSpreadConfiguration config = mVersoPublication.getConfiguration();
-            setPosition(config.getSpreadPositionFromPage(page));
+            setPosition(mVersoSpreadConfiguration.getSpreadPositionFromPage(page));
         }
     }
 
@@ -392,7 +387,7 @@ public class VersoFragment extends Fragment {
             // we will mimic the lifecycle of a fragment being destroyed and restored.
             onInternalPause();
             onSaveInstanceState(new Bundle());
-            mVersoPublication.onConfigurationChanged(newConfig);
+            mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             onInternalResume();
         }
     }
@@ -413,7 +408,7 @@ public class VersoFragment extends Fragment {
 
     private void setAdapter() {
         if (mVersoAdapter == null) {
-            mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoPublication);
+            mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoSpreadConfiguration);
             mDispatcher = new PageViewEventDispatcher();
             mVersoAdapter.setOnTapListener(mDispatcher);
             mVersoAdapter.setOnDoubleTapListener(mDispatcher);

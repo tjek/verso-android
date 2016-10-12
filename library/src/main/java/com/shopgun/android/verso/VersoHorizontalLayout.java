@@ -24,34 +24,6 @@ public class VersoHorizontalLayout extends LinearLayout {
         setOrientation(HORIZONTAL);
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-//        final int width = r - l;
-//        int curLeft = getPaddingLeft();
-//        int childWidthTotal = 0;
-//        for (int i = 0; i < getChildCount(); i++) {
-//            View child = getChildAt(i);
-//            if (child.getVisibility() != View.GONE) {
-//                childWidthTotal += child.getWidth();
-//            }
-//        }
-//
-//        if (childWidthTotal < width) {
-//            curLeft += (width - childWidthTotal) / 2;
-//        }
-//
-//        VersoLog.d(TAG, String.format("width:%s, childWidth:%s, left:%s", width, childWidthTotal, curLeft));
-//
-//        for (int i = 0; i < getChildCount(); i++) {
-//            View child = getChildAt(i);
-//            if (child.getVisibility() != GONE) {
-//                child.layout(curLeft, getPaddingTop(), curLeft + child.getMeasuredWidth(), getPaddingTop() + child.getMeasuredHeight());
-//                curLeft += child.getMeasuredWidth();
-//            }
-//        }
-    }
-
     private int getVisibleChildCount() {
         int c = getChildCount();
         for (int i = 0; i < c; i++) {

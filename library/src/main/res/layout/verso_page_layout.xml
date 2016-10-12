@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.shopgun.android.verso.VersoSpreadLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.shopgun.android.zoomlayout.ZoomLayout xmlns:android="http://schemas.android.com/apk/res/android"
                                            android:id="@+id/verso_pages_zoom"
                                            android:orientation="vertical"
                                            android:layout_width="match_parent"
@@ -14,4 +14,4 @@
         android:layout_height="wrap_content">
     </com.shopgun.android.verso.VersoHorizontalLayout>
 
-</com.shopgun.android.verso.VersoSpreadLayout>
+</com.shopgun.android.zoomlayout.ZoomLayout>

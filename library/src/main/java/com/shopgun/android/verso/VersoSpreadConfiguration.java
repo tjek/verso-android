@@ -1,9 +1,32 @@
 package com.shopgun.android.verso;
 
-public interface VersoSpreadConfiguration {
+import android.content.res.Configuration;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.view.View;
+import android.view.ViewGroup;
+
+public interface VersoSpreadConfiguration extends Parcelable {
+
+    /**
+     * Get the {@link View} representing the current page.
+     * @param page a page
+     * @return a View
+     */
+    @NonNull View getPageView(ViewGroup container, int page);
+
+    View getSpreadOverlay(ViewGroup container, int[] pages);
+
+    void onConfigurationChanged(Configuration newConfig);
+
     int getPageCount();
+
     int getSpreadCount();
+
     int getSpreadMargin();
+
     VersoSpreadProperty getSpreadProperty(int spreadPosition);
+
     int getSpreadPositionFromPage(int page);
+
 }
