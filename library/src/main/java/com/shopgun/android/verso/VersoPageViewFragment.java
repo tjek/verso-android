@@ -88,7 +88,7 @@ public class VersoPageViewFragment extends Fragment {
         for (int page : mPages) {
             View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
             if (!(view instanceof VersoPageView)) {
-                throw new IllegalArgumentException("The PageView must implement VersoPageView");
+                throw new IllegalArgumentException("The view must implement VersoPageView");
             }
             VersoPageView vpv = (VersoPageView) view;
             mPageContainer.addView(view);
