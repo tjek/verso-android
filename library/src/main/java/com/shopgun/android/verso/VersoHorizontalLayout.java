@@ -41,6 +41,9 @@ public class VersoHorizontalLayout extends LinearLayout {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
         final int height = MeasureSpec.getSize(heightMeasureSpec);
 
+        int containerWidth = 0;
+        int containerHeight = 0;
+
         final int childCount = getChildCount();
         if (childCount > 0) {
             final int childWidth = width / getVisibleChildCount();
@@ -53,11 +56,14 @@ public class VersoHorizontalLayout extends LinearLayout {
                 final View child = getChildAt(i);
                 if (child.getVisibility() != View.GONE) {
                     child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+                    containerWidth += child.getMeasuredWidth();
+                    if (containerHeight < child.getMeasuredHeight()) {
+                        containerHeight = child.getMeasuredHeight();
+                    }
                 }
             }
         }
-
-        setMeasuredDimension(resolveSize(width, widthMeasureSpec), resolveSize(height, heightMeasureSpec));
+        setMeasuredDimension(containerWidth, containerHeight);
     }
 
 }
