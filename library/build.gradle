@@ -57,10 +57,10 @@ android {
 }
 
 dependencies {
-    compile 'com.shopgun.android:utils:1.0.3'
+    compile 'com.shopgun.android:utils:1.0.4'
 //    compile project(':markhor')
-    compile 'com.shopgun.android:zoomlayout:0.1.0'
-//    compile project(':zoomlayout')
+//    compile 'com.shopgun.android:zoomlayout:0.1.0'
+    compile project(':zoomlayout')
     compile 'me.everything:overscroll-decor-android:1.0.3'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

@@ -9,13 +9,12 @@ import android.widget.Toast;
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.verso.VersoFragment;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
-import com.shopgun.android.verso.sample.textview.TextViewActivity;
 
 import java.util.Locale;
 
 public abstract class BasePublicationActivity extends AppCompatActivity {
 
-    public static final String TAG = TextViewActivity.class.getSimpleName();
+    public static final String TAG = BasePublicationActivity.class.getSimpleName();
 
     public static final String FRAG_TAG = "frag_tag";
 
@@ -26,7 +25,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
     String mPanInfo = "no info";
     String mVisiblePagesInfo = "no info";
 
-    public abstract VersoSpreadConfiguration getPublication();
+    public abstract VersoSpreadConfiguration getSpreadConfiguration();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +34,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
 
         VersoFragment fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
         if (fragment == null) {
-            fragment = VersoFragment.newInstance(getPublication());
+            fragment = new VersoFragment();
             fragment.setOverscrollDecoreBounce(true);
             getSupportFragmentManager()
                     .beginTransaction()
@@ -43,11 +42,17 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
                     .addToBackStack(FRAG_TAG)
                     .commit();
         }
+        fragment.setVersoSpreadConfiguration(getSpreadConfiguration());
+        setupListeners(fragment);
 
         mInfo = (TextView) findViewById(R.id.info);
         mInfo.setMinLines(5);
         mInfo.setMaxLines(5);
         updateInfo();
+
+    }
+
+    private void setupListeners(VersoFragment fragment) {
 
         fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
             @Override

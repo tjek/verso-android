@@ -8,7 +8,7 @@ public class ImageViewActivity extends BasePublicationActivity {
     public static final String TAG = ImageViewActivity.class.getSimpleName();
 
     @Override
-    public VersoSpreadConfiguration getPublication() {
+    public VersoSpreadConfiguration getSpreadConfiguration() {
         return new ImageViewConfiguration();
     }
 

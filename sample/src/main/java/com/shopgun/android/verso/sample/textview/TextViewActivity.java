@@ -8,7 +8,7 @@ public class TextViewActivity extends BasePublicationActivity {
     public static final String TAG = TextViewActivity.class.getSimpleName();
 
     @Override
-    public VersoSpreadConfiguration getPublication() {
+    public VersoSpreadConfiguration getSpreadConfiguration() {
         return new TextViewConfiguration();
     }
 
