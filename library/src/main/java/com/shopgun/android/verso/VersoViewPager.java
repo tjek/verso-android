@@ -2,11 +2,12 @@ package com.shopgun.android.verso;
 
 import android.content.Context;
 import android.support.v4.view.CenteredViewPager;
+import android.support.v4.view.LazyCenteredViewPager;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-public class VersoViewPager extends CenteredViewPager {
+public class VersoViewPager extends LazyCenteredViewPager {
 
     public static final String TAG = VersoViewPager.class.getSimpleName();
 
