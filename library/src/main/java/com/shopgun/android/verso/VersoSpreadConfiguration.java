@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 
-public interface VersoSpreadConfiguration extends Parcelable {
+public interface VersoSpreadConfiguration {
 
     /**
      * Get the {@link View} representing the current page.
@@ -28,5 +28,7 @@ public interface VersoSpreadConfiguration extends Parcelable {
     VersoSpreadProperty getSpreadProperty(int spreadPosition);
 
     int getSpreadPositionFromPage(int page);
+
+    boolean hasData();
 
 }
