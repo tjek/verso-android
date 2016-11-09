@@ -69,11 +69,11 @@ public class VersoFragment extends Fragment {
         mVersoViewPager.addOnLayoutChangeListener(mVersoOnLayoutChanged);
         mVersoViewPager.getViewTreeObserver().addOnPreDrawListener(mVersoOnLayoutChanged);
 
-        // Omit the left/right edge compat, and use over-scrolling instead
-        mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
-
         mPageChangeDispatcher = new PageChangeDispatcher();
         mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
+
+        // Omit the left/right edge compat, and use over-scrolling instead
+        mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
 
         if (mSavedInstanceState == null) {
             mSavedInstanceState = savedInstanceState;
