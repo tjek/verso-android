@@ -117,4 +117,9 @@ public abstract class FragmentStatelessPagerAdapter extends FragmentStatePagerAd
         }
     }
 
+    @Override
+    public void notifyDataSetChanged() {
+        mFragments = null;
+        super.notifyDataSetChanged();
+    }
 }
