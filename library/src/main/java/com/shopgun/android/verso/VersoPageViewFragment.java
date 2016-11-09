@@ -22,14 +22,12 @@ import java.util.HashSet;
 public class VersoPageViewFragment extends Fragment {
 
     public static final String TAG = VersoPageViewFragment.class.getSimpleName();
-    
-    private static final String VERSO_PUBLICATION_KEY = "verso_publication";
-    private static final String VERSO_POSITION_KEY = "verso_position";
 
-    public static VersoPageViewFragment newInstance(VersoSpreadConfiguration publication, int position) {
+    private static final String KEY_POSITION = "position";
+
+    public static VersoPageViewFragment newInstance(int position) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(VERSO_PUBLICATION_KEY, publication);
-        arguments.putInt(VERSO_POSITION_KEY, position);
+        arguments.putInt(KEY_POSITION, position);
         VersoPageViewFragment fragment = new VersoPageViewFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -57,8 +55,7 @@ public class VersoPageViewFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mVersoSpreadConfiguration = getArguments().getParcelable(VERSO_PUBLICATION_KEY);
-            mPosition = getArguments().getInt(VERSO_POSITION_KEY);
+            mPosition = getArguments().getInt(KEY_POSITION);
             mProperty = mVersoSpreadConfiguration.getSpreadProperty(mPosition);
             mPages = mProperty.getPages();
         }
@@ -154,6 +151,10 @@ public class VersoPageViewFragment extends Fragment {
             }
         }
         return rect;
+    }
+
+    public void setVersoSpreadConfiguration(VersoSpreadConfiguration configuration) {
+        mVersoSpreadConfiguration = configuration;
     }
 
     public void setOnTapListener(OnTapListener tapListener) {

@@ -28,7 +28,9 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
 
     @Override
     public Fragment createItem(int position) {
-        return VersoPageViewFragment.newInstance(mPublication, position);
+        VersoPageViewFragment f = VersoPageViewFragment.newInstance(position);
+        f.setVersoSpreadConfiguration(mPublication);
+        return f;
     }
 
     @Override
