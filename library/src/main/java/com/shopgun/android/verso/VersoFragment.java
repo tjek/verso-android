@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.utils.log.L;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ public class VersoFragment extends Fragment {
 
     public static final String STATE_OVERSCROLL_DECORE = "overscroll_decore";
     public static final String STATE_CURRENT_PAGES = "current_pages";
-    public static final String STATE_CURRENT_ITEM = "current_item";
     public static final String STATE_CURRENT_VISIBLE_PAGES = "visible_pages";
 
     VersoSpreadConfiguration mVersoSpreadConfiguration;
@@ -42,7 +42,7 @@ public class VersoFragment extends Fragment {
     boolean mBounceDecoreEnabled = false;
     HorizontalOverScrollBounceEffectDecorator mBounceDecore;
     int mCurrentOrientation;
-    int mCurrentItem = 0;
+    int mPage = 0;
     HashSet<Integer> mCurrentVisiblePages = new HashSet<>();
     Rect mViewPagerHitRect = new Rect();
     int[] mOutLocation = new int[2];
@@ -340,9 +340,12 @@ public class VersoFragment extends Fragment {
      * @param page The page to turn to
      */
     public void setPage(int page) {
-        if (page >= 0 && mVersoSpreadConfiguration != null) {
-            int position = mVersoSpreadConfiguration.getSpreadPositionFromPage(page);
-            setPosition(position);
+        if (page >= 0) {
+            mPage = page;
+            if (mVersoSpreadConfiguration != null) {
+                int position = mVersoSpreadConfiguration.getSpreadPositionFromPage(page);
+                setPosition(position);
+            }
         }
     }
 
@@ -352,12 +355,11 @@ public class VersoFragment extends Fragment {
      *
      * @param position A position
      */
-    public void setPosition(int position) {
-        if (position >= 0) {
-            mCurrentItem = position;
-            if (mVersoViewPager != null) {
-                mVersoViewPager.setCurrentItem(position);
-            }
+    private void setPosition(int position) {
+        if (position >= 0 &&
+                mVersoViewPager != null &&
+                mVersoViewPager.getCurrentItem() != position) {
+            mVersoViewPager.setCurrentItem(position);
         }
     }
 
@@ -385,6 +387,7 @@ public class VersoFragment extends Fragment {
             onSaveInstanceState(new Bundle());
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             onRestoreState(mSavedInstanceState);
+            notifyVersoConfigurationChanged();
             onInternalResume(newConfig);
         }
     }
@@ -424,14 +427,11 @@ public class VersoFragment extends Fragment {
     }
 
     protected void onRestoreState(Bundle savedInstanceState) {
-
         if (savedInstanceState != null) {
             mBounceDecoreEnabled = savedInstanceState.getBoolean(STATE_OVERSCROLL_DECORE);
-            mCurrentItem = savedInstanceState.getInt(STATE_CURRENT_ITEM);
             mCurrentVisiblePages.clear();
             ArrayList<Integer> pages = savedInstanceState.getIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES);
             mCurrentVisiblePages.addAll(pages);
-
             int[] currentPages = savedInstanceState.getIntArray(STATE_CURRENT_PAGES);
             if (currentPages != null && currentPages.length > 0) {
                 setPage(currentPages[0]);
@@ -448,9 +448,7 @@ public class VersoFragment extends Fragment {
     }
 
     private void ensureAdapter() {
-
         if (mVersoSpreadConfiguration != null) {
-
             if (mVersoAdapter == null) {
                 mVersoAdapter = new VersoAdapter(getFragmentManager(), mVersoSpreadConfiguration);
                 mDispatcher = new PageViewEventDispatcher();
@@ -461,17 +459,15 @@ public class VersoFragment extends Fragment {
                 mVersoAdapter.setOnPanListener(mDispatcher);
             }
 
-        } else {
-            mVersoAdapter = null;
-            mCurrentItem = 0;
-        }
+            if (mVersoViewPager != null && mVersoSpreadConfiguration.hasData()) {
+                mVersoViewPager.setAdapter(mVersoAdapter);
+                setPage(mPage);
+            }
 
-        if (mVersoViewPager != null &&
-                ( (mVersoSpreadConfiguration != null &&
-                mVersoSpreadConfiguration.hasData()) ||
-                mVersoAdapter == null)) {
-            mVersoViewPager.setAdapter(mVersoAdapter);
-            mVersoViewPager.setCurrentItem(mCurrentItem);
+        } else if (mVersoViewPager != null) {
+            mVersoAdapter = null;
+            mVersoViewPager.setAdapter(null);
+            mVersoViewPager.setCurrentItem(0);
         }
 
     }
@@ -498,7 +494,6 @@ public class VersoFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putBoolean(STATE_OVERSCROLL_DECORE, mBounceDecoreEnabled);
         outState.putIntArray(STATE_CURRENT_PAGES, getCurrentPages());
-        outState.putInt(STATE_CURRENT_ITEM, mCurrentItem);
         ArrayList<Integer> pages = new ArrayList<>(mCurrentVisiblePages);
         outState.putIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES, pages);
         mSavedInstanceState = outState;
