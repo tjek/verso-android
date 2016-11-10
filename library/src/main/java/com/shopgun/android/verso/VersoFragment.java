@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
-import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.utils.log.L;
 
 import java.util.ArrayList;
@@ -33,6 +32,7 @@ public class VersoFragment extends Fragment {
     public static final String STATE_OVERSCROLL_DECORE = "overscroll_decore";
     public static final String STATE_CURRENT_PAGES = "current_pages";
     public static final String STATE_CURRENT_VISIBLE_PAGES = "visible_pages";
+    public static final String STATE_CURRENT_ORIENTATION = "orientation";
 
     VersoSpreadConfiguration mVersoSpreadConfiguration;
     VersoViewPager mVersoViewPager;
@@ -383,7 +383,6 @@ public class VersoFragment extends Fragment {
         if (mCurrentOrientation != newConfig.orientation) {
             // To correctly destroy the state of the VersoAdapter
             // we will mimic the lifecycle of a fragment being destroyed and restored.
-            onInternalPause();
             onSaveInstanceState(new Bundle());
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             onRestoreState(mSavedInstanceState);
@@ -407,7 +406,6 @@ public class VersoFragment extends Fragment {
     }
 
     private void onInternalResume(Configuration config) {
-        mCurrentOrientation = config.orientation;
         if (mVersoSpreadConfiguration != null) {
             mVersoSpreadConfiguration.onConfigurationChanged(config);
             if (mVersoViewPager != null) {
@@ -428,6 +426,8 @@ public class VersoFragment extends Fragment {
 
     protected void onRestoreState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
+            int defOrientation = getResources().getConfiguration().orientation;
+            mCurrentOrientation = savedInstanceState.getInt(STATE_CURRENT_ORIENTATION, defOrientation);
             mBounceDecoreEnabled = savedInstanceState.getBoolean(STATE_OVERSCROLL_DECORE);
             mCurrentVisiblePages.clear();
             ArrayList<Integer> pages = savedInstanceState.getIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES);
@@ -472,16 +472,6 @@ public class VersoFragment extends Fragment {
 
     }
 
-    @Override
-    public void onPause() {
-        onInternalPause();
-        super.onPause();
-    }
-
-    private void onInternalPause() {
-        clearAdapter();
-    }
-
     private void clearAdapter() {
         if (mVersoAdapter != null) {
             mVersoAdapter.clearState();
@@ -491,7 +481,15 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+
+        // TODO: 09/11/16 Check if this is safe
+        // If the adapter isn't cleared by the time onStop is called,
+        // we'll crash next time we resume the app, because FragmentManager
+        // has saved the state of the Fragments in VersoAdapter
+        clearAdapter();
+
         super.onSaveInstanceState(outState);
+        outState.putInt(STATE_CURRENT_ORIENTATION, mCurrentOrientation);
         outState.putBoolean(STATE_OVERSCROLL_DECORE, mBounceDecoreEnabled);
         outState.putIntArray(STATE_CURRENT_PAGES, getCurrentPages());
         ArrayList<Integer> pages = new ArrayList<>(mCurrentVisiblePages);
