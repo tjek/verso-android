@@ -513,33 +513,18 @@ public class VersoFragment extends Fragment {
             VersoPageViewFragment.OnPanListener {
 
         @Override
-        public boolean onContentTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            return mTapListener != null && mTapListener.onContentTap(pages, absX, absY, relX, relY);
+        public boolean onTap(VersoTapInfo info) {
+            return mTapListener != null && mTapListener.onTap(info);
         }
 
         @Override
-        public boolean onViewTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            return mTapListener != null && mTapListener.onViewTap(pages, absX, absY);
+        public boolean onDoubleTap(VersoTapInfo info) {
+            return mDoubleTapListener != null && mDoubleTapListener.onDoubleTap(info);
         }
 
         @Override
-        public boolean onContentDoubleTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            return mDoubleTapListener != null && mDoubleTapListener.onContentDoubleTap(pages, absX, absY, relX, relY);
-        }
-
-        @Override
-        public boolean onViewDoubleTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            return mDoubleTapListener != null && mDoubleTapListener.onViewDoubleTap(pages, absX, absY);
-        }
-
-        @Override
-        public void onContentLongTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            if (mLongTapListener != null) mLongTapListener.onContentLongTap(pages, absX, absY, relX, relY);
-        }
-
-        @Override
-        public void onViewLongTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY) {
-            if (mLongTapListener != null) mLongTapListener.onViewLongTap(pages, absX, absY);
+        public void onLongTap(VersoTapInfo info) {
+            if (mLongTapListener != null) mLongTapListener.onLongTap(info);
         }
 
         @Override
@@ -617,18 +602,15 @@ public class VersoFragment extends Fragment {
     }
 
     public interface OnTapListener {
-        boolean onContentTap(int[] pages, float absX, float absY, float relX, float relY);
-        boolean onViewTap(int[] pages, float absX, float absY);
+        boolean onTap(VersoTapInfo info);
     }
 
     public interface OnDoubleTapListener {
-        boolean onContentDoubleTap(int[] pages, float absX, float absY, float relX, float relY);
-        boolean onViewDoubleTap(int[] pages, float absX, float absY);
+        boolean onDoubleTap(VersoTapInfo info);
     }
 
     public interface OnLongTapListener {
-        void onContentLongTap(int[] pages, float absX, float absY, float relX, float relY);
-        void onViewLongTap(int[] pages, float absX, float absY);
+        void onLongTap(VersoTapInfo info);
     }
 
 }

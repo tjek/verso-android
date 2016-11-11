@@ -41,8 +41,8 @@ public class VersoPageViewFragment extends Fragment {
     // Input data
     private VersoSpreadConfiguration mVersoSpreadConfiguration;
     private VersoSpreadProperty mProperty;
-    private int mPosition;
-    private int[] mPages;
+    protected int mPosition;
+    protected int[] mPages;
 
     // listeners
     private OnZoomListener mOnZoomListener;
@@ -178,18 +178,15 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     public interface OnTapListener {
-        boolean onContentTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
-        boolean onViewTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
+        boolean onTap(VersoTapInfo info);
     }
 
     public interface OnDoubleTapListener {
-        boolean onContentDoubleTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
-        boolean onViewDoubleTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
+        boolean onDoubleTap(VersoTapInfo info);
     }
 
     public interface OnLongTapListener {
-        void onContentLongTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
-        void onViewLongTap(VersoPageViewFragment fragment, int position, int[] pages, float absX, float absY, float relX, float relY);
+        void onLongTap(VersoTapInfo info);
     }
 
     public interface OnZoomListener {
@@ -208,19 +205,6 @@ public class VersoPageViewFragment extends Fragment {
     private void updateRect() {
         RectF r = mZoomLayout.getDrawRect();
         mDrawRect.set(Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom));
-    }
-
-    private class TapDispatcher implements ZoomLayout.OnTapListener {
-
-        @Override
-        public boolean onContentTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            return mOnTapListener != null && mOnTapListener.onContentTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
-        }
-
-        @Override
-        public boolean onViewTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            return mOnTapListener != null && mOnTapListener.onViewTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
-        }
     }
 
     public void dispatchZoom(float scale) {
@@ -251,20 +235,23 @@ public class VersoPageViewFragment extends Fragment {
         }
     }
 
+    private class TapDispatcher implements ZoomLayout.OnTapListener {
+
+        @Override
+        public boolean onTap(ZoomLayout view, ZoomLayout.TapInfo info) {
+            return mOnTapListener != null && mOnTapListener.onTap(new VersoTapInfo(info, VersoPageViewFragment.this));
+        }
+
+    }
+
     private class DoubleTapDispatcher implements ZoomLayout.OnDoubleTapListener {
 
         ZoomLayout.OnDoubleTapListener mZoomDoubleTapListener = new ZoomOnDoubleTapListener(false);
 
         @Override
-        public boolean onContentDoubleTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            boolean consumed = mOnDoubleTapListener != null && mOnDoubleTapListener.onContentDoubleTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
-            return !consumed && mZoomDoubleTapListener.onContentDoubleTap(view, absX, absY, relX, relY);
-        }
-
-        @Override
-        public boolean onViewDoubleTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            boolean consumed = mOnDoubleTapListener != null && mOnDoubleTapListener.onViewDoubleTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
-            return !consumed && mZoomDoubleTapListener.onViewDoubleTap(view, absX, absY, relX, relY);
+        public boolean onDoubleTap(ZoomLayout view, ZoomLayout.TapInfo info) {
+            boolean consumed = mOnDoubleTapListener != null && mOnDoubleTapListener.onDoubleTap(new VersoTapInfo(info, VersoPageViewFragment.this));
+            return !consumed && mZoomDoubleTapListener.onDoubleTap(view, info);
         }
 
     }
@@ -272,14 +259,10 @@ public class VersoPageViewFragment extends Fragment {
     private class LongTapDispatcher implements ZoomLayout.OnLongTapListener {
 
         @Override
-        public void onContentLongTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            if (mOnLongTapListener != null) mOnLongTapListener.onContentLongTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
+        public void onLongTap(ZoomLayout view, ZoomLayout.TapInfo info) {
+            if (mOnLongTapListener != null) mOnLongTapListener.onLongTap(new VersoTapInfo(info, VersoPageViewFragment.this));
         }
 
-        @Override
-        public void onViewLongTap(ZoomLayout view, float absX, float absY, float relX, float relY) {
-            if (mOnLongTapListener != null) mOnLongTapListener.onViewLongTap(VersoPageViewFragment.this, mPosition, mPages, absX, absY, relX, relY);
-        }
     }
 
     private class ZoomDispatcher implements ZoomLayout.OnZoomListener {
@@ -338,4 +321,5 @@ public class VersoPageViewFragment extends Fragment {
         }
 
     }
+
 }
