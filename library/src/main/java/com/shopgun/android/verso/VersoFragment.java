@@ -3,6 +3,8 @@ package com.shopgun.android.verso;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.CenteredViewPager;
@@ -12,9 +14,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import com.shopgun.android.utils.TextUtils;
+import com.shopgun.android.utils.ToStringUtils;
 import com.shopgun.android.utils.log.L;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,16 +34,12 @@ public class VersoFragment extends Fragment {
 
     public static final String TAG = VersoFragment.class.getSimpleName();
 
-    public static final String STATE_OVERSCROLL_DECORE = "overscroll_decore";
-    public static final String STATE_CURRENT_PAGES = "current_pages";
-    public static final String STATE_CURRENT_VISIBLE_PAGES = "visible_pages";
-    public static final String STATE_CURRENT_ORIENTATION = "orientation";
+    private static final String SAVED_STATE = "verso_saved_state";
 
     VersoSpreadConfiguration mVersoSpreadConfiguration;
     VersoViewPager mVersoViewPager;
     VersoAdapter mVersoAdapter;
 
-    Bundle mSavedInstanceState;
     boolean mBounceDecoreEnabled = false;
     HorizontalOverScrollBounceEffectDecorator mBounceDecore;
     int mCurrentOrientation;
@@ -75,10 +76,10 @@ public class VersoFragment extends Fragment {
         // Omit the left/right edge compat, and use over-scrolling instead
         mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
 
-        if (mSavedInstanceState == null) {
-            mSavedInstanceState = savedInstanceState;
+        if (savedInstanceState != null) {
+            SavedState savedState = savedInstanceState.getParcelable(SAVED_STATE);
+            onRestoreState(savedState);
         }
-        onRestoreState(savedInstanceState);
 
         return mVersoViewPager;
     }
@@ -378,34 +379,28 @@ public class VersoFragment extends Fragment {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (mCurrentOrientation != newConfig.orientation) {
-            // To correctly destroy the state of the VersoAdapter
-            // we will mimic the lifecycle of a fragment being destroyed and restored.
-            onSaveInstanceState(new Bundle());
-            mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
-            onRestoreState(mSavedInstanceState);
-            notifyVersoConfigurationChanged();
-            onInternalResume(newConfig);
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mSavedInstanceState != null) {
-            onRestoreState(mSavedInstanceState);
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         onInternalResume(getResources().getConfiguration());
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        L.d(TAG, "onConfigurationChanged " + ToStringUtils.orientation(mCurrentOrientation) + " -> " + ToStringUtils.orientation(newConfig.orientation));
+        super.onConfigurationChanged(newConfig);
+        if (mCurrentOrientation != newConfig.orientation) {
+            // To correctly destroy the state of the VersoAdapter
+            // we will mimic the lifecycle of a fragment being destroyed and restored.
+            SavedState savedState = new SavedState(this);
+            mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
+            notifyVersoConfigurationChanged();
+            onRestoreState(savedState);
+            onInternalResume(newConfig);
+        }
+    }
+
     private void onInternalResume(Configuration config) {
+        mCurrentOrientation = config.orientation;
         if (mVersoSpreadConfiguration != null) {
             mVersoSpreadConfiguration.onConfigurationChanged(config);
             if (mVersoViewPager != null) {
@@ -413,6 +408,7 @@ public class VersoFragment extends Fragment {
             }
         }
         ensureAdapter();
+        setPage(mPage);
     }
 
     public void setVersoSpreadConfiguration(VersoSpreadConfiguration configuration) {
@@ -424,20 +420,17 @@ public class VersoFragment extends Fragment {
         return mVersoSpreadConfiguration;
     }
 
-    protected void onRestoreState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            int defOrientation = getResources().getConfiguration().orientation;
-            mCurrentOrientation = savedInstanceState.getInt(STATE_CURRENT_ORIENTATION, defOrientation);
-            mBounceDecoreEnabled = savedInstanceState.getBoolean(STATE_OVERSCROLL_DECORE);
+    protected void onRestoreState(SavedState ss) {
+        if (ss != null) {
+            mBounceDecoreEnabled = ss.bounceDecore;
             mCurrentVisiblePages.clear();
-            ArrayList<Integer> pages = savedInstanceState.getIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES);
-            mCurrentVisiblePages.addAll(pages);
-            int[] currentPages = savedInstanceState.getIntArray(STATE_CURRENT_PAGES);
-            if (currentPages != null && currentPages.length > 0) {
-                setPage(currentPages[0]);
+            for (int page : ss.visiblePages) {
+                mCurrentVisiblePages.add(page);
+            }
+            if (ss.pages != null && ss.pages.length > 0) {
+                setPage(ss.pages[0]);
             }
         }
-        mSavedInstanceState = null;
     }
 
     public void notifyVersoConfigurationChanged() {
@@ -469,10 +462,13 @@ public class VersoFragment extends Fragment {
             mVersoViewPager.setAdapter(null);
             mVersoViewPager.setCurrentItem(0);
         }
-
     }
 
-    private void clearAdapter() {
+    /**
+     * This MUST be called from {@link android.app.Activity#onSaveInstanceState(Bundle)}
+     * prior to calling the super class.
+     */
+    public void clearAdapter() {
         if (mVersoAdapter != null) {
             mVersoAdapter.clearState();
         }
@@ -481,28 +477,8 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-
-        // TODO: 09/11/16 Check if this is safe
-        // If the adapter isn't cleared by the time onStop is called,
-        // we'll crash next time we resume the app, because FragmentManager
-        // has saved the state of the Fragments in VersoAdapter
-        clearAdapter();
-
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_CURRENT_ORIENTATION, mCurrentOrientation);
-        outState.putBoolean(STATE_OVERSCROLL_DECORE, mBounceDecoreEnabled);
-        outState.putIntArray(STATE_CURRENT_PAGES, getCurrentPages());
-        ArrayList<Integer> pages = new ArrayList<>(mCurrentVisiblePages);
-        outState.putIntegerArrayList(STATE_CURRENT_VISIBLE_PAGES, pages);
-        mSavedInstanceState = outState;
-    }
-
-    @Override
-    public void onStop() {
-        if (mSavedInstanceState == null) {
-            onSaveInstanceState(new Bundle());
-        }
-        super.onStop();
+        outState.putParcelable(SAVED_STATE, new SavedState(this));
     }
 
     private class PageViewEventDispatcher implements
@@ -611,6 +587,57 @@ public class VersoFragment extends Fragment {
 
     public interface OnLongTapListener {
         void onLongTap(VersoTapInfo info);
+    }
+
+    private static class SavedState implements Parcelable {
+
+        boolean bounceDecore = false;
+        int[] pages;
+        int[] visiblePages;
+
+        private SavedState(VersoFragment f) {
+            bounceDecore = f.mBounceDecoreEnabled;
+            pages = f.getCurrentPages();
+            pages = Arrays.copyOf(pages, pages.length);
+            visiblePages = f.getVisiblePages();
+            visiblePages = Arrays.copyOf(visiblePages, visiblePages.length);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeByte(this.bounceDecore ? (byte) 1 : (byte) 0);
+            dest.writeIntArray(this.pages);
+            dest.writeIntArray(this.visiblePages);
+        }
+
+        protected SavedState(Parcel in) {
+            this.bounceDecore = in.readByte() != 0;
+            this.pages = in.createIntArray();
+            this.visiblePages = in.createIntArray();
+        }
+
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel source) {
+                return new SavedState(source);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+
+        @Override
+        public String toString() {
+            return String.format("SavedState[ bounceDecore:%s, pages:%s, visiblePages:%s ]",
+                    bounceDecore, TextUtils.join(pages), TextUtils.join(visiblePages));
+        }
     }
 
 }
