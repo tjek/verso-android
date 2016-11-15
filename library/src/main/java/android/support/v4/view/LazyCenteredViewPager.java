@@ -3,9 +3,6 @@ package android.support.v4.view;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import com.shopgun.android.utils.log.L;
-import com.shopgun.android.utils.log.LogUtil;
-
 
 /**
  * When the PagerAdapter is set on the ViewPager, the first items are always populated.

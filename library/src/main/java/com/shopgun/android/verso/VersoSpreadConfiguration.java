@@ -1,7 +1,6 @@
 package com.shopgun.android.verso;
 
 import android.content.res.Configuration;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;

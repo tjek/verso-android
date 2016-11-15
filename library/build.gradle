@@ -57,7 +57,7 @@ android {
 }
 
 dependencies {
-    compile 'com.shopgun.android:utils:1.0.4'
+    compile 'com.shopgun.android:utils:1.0.5'
 //    compile project(':markhor')
 //    compile 'com.shopgun.android:zoomlayout:0.1.0'
     compile project(':zoomlayout')

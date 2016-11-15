@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.TextUtils;
-import com.shopgun.android.utils.ToStringUtils;
 import com.shopgun.android.utils.log.L;
 
 import java.util.ArrayList;
@@ -386,7 +385,6 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        L.d(TAG, "onConfigurationChanged " + ToStringUtils.orientation(mCurrentOrientation) + " -> " + ToStringUtils.orientation(newConfig.orientation));
         super.onConfigurationChanged(newConfig);
         if (mCurrentOrientation != newConfig.orientation) {
             // To correctly destroy the state of the VersoAdapter
