@@ -10,10 +10,10 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.shopgun.android.utils.NumberUtils;
+import com.shopgun.android.utils.log.L;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
@@ -100,31 +100,38 @@ public class VersoPageViewFragment extends Fragment {
 
     }
 
+    OverlaySizer mOverlaySizer;
+
     @Override
-    public void onResume() {
-        super.onResume();
-        mPageContainer.getViewTreeObserver().addOnGlobalLayoutListener(new OverlaySizer());
+    public void onStart() {
+        super.onStart();
+        mOverlaySizer = new OverlaySizer();
+        mPageContainer.addOnLayoutChangeListener(mOverlaySizer);
     }
 
-    class OverlaySizer implements ViewTreeObserver.OnGlobalLayoutListener {
+    @Override
+    public void onStop() {
+        super.onStop();
+        mPageContainer.removeOnLayoutChangeListener(mOverlaySizer);
+        mOverlaySizer = null;
+    }
+
+    class OverlaySizer implements View.OnLayoutChangeListener {
 
         @Override
-        public void onGlobalLayout() {
-            if (mSpreadOverlay != null) {
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            boolean changed = left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom;
+            if (changed) {
+                L.d(TAG, "onLayoutChange");
                 Rect r = getChildPosition();
-                if (r.left != mSpreadOverlay.getLeft() ||
-                        r.top != mSpreadOverlay.getTop() ||
-                        r.right != mSpreadOverlay.getRight() ||
-                        r.bottom != mSpreadOverlay.getBottom()) {
-                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mSpreadOverlay.getLayoutParams();
-                    lp.width = r.width();
-                    lp.height = r.height();
-                    lp.gravity = Gravity.CENTER;
-                    mSpreadOverlay.setLayoutParams(lp);
-                }
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mSpreadOverlay.getLayoutParams();
+                lp.width = r.width();
+                lp.height = r.height();
+                lp.gravity = Gravity.CENTER;
+                mSpreadOverlay.setLayoutParams(lp);
+
             }
         }
-
     }
 
     private Rect getChildPosition() {
@@ -151,6 +158,10 @@ public class VersoPageViewFragment extends Fragment {
             }
         }
         return rect;
+    }
+
+    public View getSpreadOverlay() {
+        return mSpreadOverlay;
     }
 
     public void setVersoSpreadConfiguration(VersoSpreadConfiguration configuration) {

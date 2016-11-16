@@ -57,9 +57,7 @@ public class VersoHorizontalLayout extends LinearLayout {
                 if (child.getVisibility() != View.GONE) {
                     child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
                     containerWidth += child.getMeasuredWidth();
-                    if (containerHeight < child.getMeasuredHeight()) {
-                        containerHeight = child.getMeasuredHeight();
-                    }
+                    containerHeight = Math.max(containerHeight, child.getMeasuredHeight());
                 }
             }
         }
