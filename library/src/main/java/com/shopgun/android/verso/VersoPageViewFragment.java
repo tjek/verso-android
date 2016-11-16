@@ -122,14 +122,12 @@ public class VersoPageViewFragment extends Fragment {
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
             boolean changed = left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom;
             if (changed) {
-                L.d(TAG, "onLayoutChange");
                 Rect r = getChildPosition();
                 FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mSpreadOverlay.getLayoutParams();
                 lp.width = r.width();
                 lp.height = r.height();
                 lp.gravity = Gravity.CENTER;
                 mSpreadOverlay.setLayoutParams(lp);
-
             }
         }
     }
