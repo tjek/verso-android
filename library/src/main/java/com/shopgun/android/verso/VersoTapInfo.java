@@ -10,6 +10,8 @@ public class VersoTapInfo extends ZoomLayout.TapInfo {
 
     private static final String STRING_FORMAT = "VersoTapInfo[ position:%s, pageTapped:%s, pages:%s, absX:%.0f, absY:%.0f, relX:%.0f, relY:%.0f, percentX:%.2f, percentY:%.2f, contentClicked:%s ]";
 
+    public static final int NO_CONTENT = -1;
+
     private final VersoPageViewFragment mFragment;
     private final int mPosition;
     private final int[] mPages;
@@ -26,7 +28,7 @@ public class VersoTapInfo extends ZoomLayout.TapInfo {
         mPages = Arrays.copyOf(mFragment.mPages, mFragment.mPages.length);
         float pageWidth = 1f / (float) mPages.length;
         int pagePos = (int) Math.floor(getPercentX() / pageWidth);
-        mPageTapped = mPages[pagePos];
+        mPageTapped = info.isContentClicked() ? mPages[pagePos] : NO_CONTENT;
     }
 
     public VersoPageViewFragment getFragment() {
