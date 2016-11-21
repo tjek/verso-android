@@ -14,22 +14,22 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
 
     public static final String TAG = VersoAdapter.class.getSimpleName();
 
-    private VersoSpreadConfiguration mPublication;
+    private VersoSpreadConfiguration mConfiguration;
     private VersoPageViewFragment.OnZoomListener mOnZoomListener;
     private VersoPageViewFragment.OnPanListener mOnPanListener;
     private VersoPageViewFragment.OnTapListener mOnTapListener;
     private VersoPageViewFragment.OnDoubleTapListener mOnDoubleTapListener;
     private VersoPageViewFragment.OnLongTapListener mOnLongTapListener;
 
-    public VersoAdapter(FragmentManager fragmentManager, VersoSpreadConfiguration publication) {
+    public VersoAdapter(FragmentManager fragmentManager, VersoSpreadConfiguration configuration) {
         super(fragmentManager);
-        mPublication = publication;
+        mConfiguration = configuration;
     }
 
     @Override
     public Fragment createItem(int position) {
         VersoPageViewFragment f = VersoPageViewFragment.newInstance(position);
-        f.setVersoSpreadConfiguration(mPublication);
+        f.setVersoSpreadConfiguration(mConfiguration);
         return f;
     }
 
@@ -46,12 +46,12 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
 
     @Override
     public int getCount() {
-        return mPublication.getSpreadCount();
+        return mConfiguration.getSpreadCount();
     }
 
     @Override
     public float getPageWidth(int position) {
-        return mPublication.getSpreadProperty(position).getWidth();
+        return mConfiguration.getSpreadProperty(position).getWidth();
     }
 
     public VersoPageViewFragment getVersoFragment(ViewGroup container, int position) {
