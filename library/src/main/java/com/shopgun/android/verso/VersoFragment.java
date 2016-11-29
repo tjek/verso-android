@@ -16,6 +16,7 @@ import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.utils.log.L;
+import com.shopgun.android.utils.log.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ public class VersoFragment extends Fragment {
     HashSet<Integer> mCurrentVisiblePages = new HashSet<>();
     Rect mViewPagerHitRect = new Rect();
     int[] mOutLocation = new int[2];
+    SavedState mSavedState;
 
     PageChangeDispatcher mPageChangeDispatcher;
     PageViewEventDispatcher mDispatcher;
@@ -77,9 +79,9 @@ public class VersoFragment extends Fragment {
         mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
 
         if (savedInstanceState != null) {
-            SavedState savedState = savedInstanceState.getParcelable(SAVED_STATE);
-            onRestoreState(savedState);
+            mSavedState = savedInstanceState.getParcelable(SAVED_STATE);
         }
+        onRestoreState(mSavedState);
 
         return mVersoViewPager;
     }
@@ -333,6 +335,7 @@ public class VersoFragment extends Fragment {
      * @param page The page to turn to
      */
     public void setPage(int page) {
+        LogUtil.printMethod();
         if (page >= 0) {
             mPage = page;
             if (mVersoSpreadConfiguration != null) {
@@ -382,10 +385,10 @@ public class VersoFragment extends Fragment {
         if (mCurrentOrientation != newConfig.orientation) {
             // To correctly destroy the state of the VersoAdapter
             // we will mimic the lifecycle of a fragment being destroyed and restored.
-            SavedState savedState = new SavedState(this);
+            mSavedState = new SavedState(this);
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             notifyVersoConfigurationChanged();
-            onRestoreState(savedState);
+            onRestoreState(mSavedState);
             onInternalResume(newConfig);
         }
     }
@@ -422,6 +425,7 @@ public class VersoFragment extends Fragment {
                 setPage(ss.pages[0]);
             }
         }
+        mSavedState = null;
     }
 
     public void notifyVersoConfigurationChanged() {
@@ -447,6 +451,10 @@ public class VersoFragment extends Fragment {
             if (mVersoViewPager != null && mVersoSpreadConfiguration.hasData()) {
                 mVersoViewPager.setAdapter(mVersoAdapter);
                 setPage(mPage);
+                // Manually trigger the first pageChange event
+                int pos = mVersoViewPager.getCurrentItem();
+                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(pos).getPages();
+                dispatchOnPagesChanged(pos, currentPages, pos, currentPages);
             }
 
         } else if (mVersoViewPager != null) {
@@ -458,6 +466,8 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onPause() {
+        // we'll have to save state manually because we clear the adapter
+        mSavedState = new SavedState(this);
         clearAdapter();
         super.onPause();
     }
@@ -476,7 +486,7 @@ public class VersoFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(SAVED_STATE, new SavedState(this));
+        outState.putParcelable(SAVED_STATE, mSavedState);
     }
 
     private class PageViewEventDispatcher implements
