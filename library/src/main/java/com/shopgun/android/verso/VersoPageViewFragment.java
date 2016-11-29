@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.shopgun.android.utils.NumberUtils;
-import com.shopgun.android.utils.log.L;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
@@ -34,9 +33,10 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     // Views
-    private ZoomLayout mZoomLayout;
+    protected ZoomLayout mZoomLayout;
     private VersoHorizontalLayout mPageContainer;
     private View mSpreadOverlay;
+    private OverlaySizer mOverlaySizer;
 
     // Input data
     private VersoSpreadConfiguration mVersoSpreadConfiguration;
@@ -47,6 +47,7 @@ public class VersoPageViewFragment extends Fragment {
     // listeners
     private OnZoomListener mOnZoomListener;
     private OnPanListener mOnPanListener;
+    private OnTouchListener mOnTouchListener;
     private OnTapListener mOnTapListener;
     private OnDoubleTapListener mOnDoubleTapListener;
     private OnLongTapListener mOnLongTapListener;
@@ -70,11 +71,12 @@ public class VersoPageViewFragment extends Fragment {
             // for some reason, this works. LAYER_TYPE_SOFTWARE works too...
             mZoomLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
-        mZoomLayout.setOnZoomListener(new ZoomDispatcher());
-        mZoomLayout.setOnPanListener(new PanDispatcher());
-        mZoomLayout.setOnTapListener(new TapDispatcher());
-        mZoomLayout.setOnDoubleTapListener(new DoubleTapDispatcher());
-        mZoomLayout.setOnLongTapListener(new LongTapDispatcher());
+        mZoomLayout.addOnZoomListener(new ZoomDispatcher());
+        mZoomLayout.addOnPanListener(new PanDispatcher());
+        mZoomLayout.addOnTouchListener(new TouchDispatcher());
+        mZoomLayout.addOnTapListener(new TapDispatcher());
+        mZoomLayout.addOnDoubleTapListener(new DoubleTapDispatcher());
+        mZoomLayout.addOnLongTapListener(new LongTapDispatcher());
 
         boolean zoom = !NumberUtils.isEqual(mProperty.getMaxZoomScale(), mProperty.getMinZoomScale());
         mZoomLayout.setAllowZoom(zoom);
@@ -87,7 +89,6 @@ public class VersoPageViewFragment extends Fragment {
             if (!(view instanceof VersoPageView)) {
                 throw new IllegalArgumentException("The view must implement VersoPageView");
             }
-            VersoPageView vpv = (VersoPageView) view;
             mPageContainer.addView(view);
         }
 
@@ -99,8 +100,6 @@ public class VersoPageViewFragment extends Fragment {
         return mZoomLayout;
 
     }
-
-    OverlaySizer mOverlaySizer;
 
     @Override
     public void onStart() {
@@ -166,6 +165,10 @@ public class VersoPageViewFragment extends Fragment {
         mVersoSpreadConfiguration = configuration;
     }
 
+    public void setOnTouchlistener(OnTouchListener touchListener) {
+        mOnTouchListener = touchListener;
+    }
+
     public void setOnTapListener(OnTapListener tapListener) {
         mOnTapListener = tapListener;
     }
@@ -186,6 +189,10 @@ public class VersoPageViewFragment extends Fragment {
         mOnPanListener = listener;
     }
 
+    public interface OnTouchListener {
+        boolean onTouch(int action, VersoTapInfo info);
+    }
+
     public interface OnTapListener {
         boolean onTap(VersoTapInfo info);
     }
@@ -199,21 +206,15 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     public interface OnZoomListener {
-        void onZoomBegin(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect);
-        void onZoom(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect);
-        void onZoomEnd(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect);
+        void onZoomBegin(VersoZoomPanInfo info);
+        void onZoom(VersoZoomPanInfo info);
+        void onZoomEnd(VersoZoomPanInfo info);
     }
 
     public interface OnPanListener {
-        void onPanBegin(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect);
-        void onPan(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect);
-        void onPanEnd(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect);
-    }
-
-    private final Rect mDrawRect = new Rect();
-    private void updateRect() {
-        RectF r = mZoomLayout.getDrawRect();
-        mDrawRect.set(Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom));
+        void onPanBegin(VersoZoomPanInfo info);
+        void onPan(VersoZoomPanInfo info);
+        void onPanEnd(VersoZoomPanInfo info);
     }
 
     public void dispatchZoom(float scale) {
@@ -242,6 +243,15 @@ public class VersoPageViewFragment extends Fragment {
                 result.add(mPages[i]);
             }
         }
+    }
+
+    private class TouchDispatcher implements ZoomLayout.OnTouchListener {
+
+        @Override
+        public boolean onTouch(ZoomLayout view, int action, ZoomLayout.TapInfo info) {
+            return mOnTouchListener != null && mOnTouchListener.onTouch(action, new VersoTapInfo(info, VersoPageViewFragment.this));
+        }
+
     }
 
     private class TapDispatcher implements ZoomLayout.OnTapListener {
@@ -274,13 +284,17 @@ public class VersoPageViewFragment extends Fragment {
 
     }
 
+    private Rect getZoomLayoutRect(ZoomLayout zl) {
+        RectF r = zl.getDrawRect();
+        return new Rect(Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom));
+    }
+
     private class ZoomDispatcher implements ZoomLayout.OnZoomListener {
 
         @Override
         public void onZoomBegin(ZoomLayout view, float scale) {
             if (mOnZoomListener != null) {
-                updateRect();
-                mOnZoomListener.onZoomBegin(VersoPageViewFragment.this, mPosition, mPages, scale, mDrawRect);
+                mOnZoomListener.onZoomBegin(new VersoZoomPanInfo(VersoPageViewFragment.this, scale, getZoomLayoutRect(view)));
             }
         }
 
@@ -288,16 +302,14 @@ public class VersoPageViewFragment extends Fragment {
         public void onZoom(ZoomLayout view, float scale) {
             dispatchZoom(scale);
             if (mOnZoomListener != null) {
-                updateRect();
-                mOnZoomListener.onZoom(VersoPageViewFragment.this, mPosition, mPages, scale, mDrawRect);
+                mOnZoomListener.onZoom(new VersoZoomPanInfo(VersoPageViewFragment.this, scale, getZoomLayoutRect(view)));
             }
         }
 
         @Override
         public void onZoomEnd(ZoomLayout view, float scale) {
             if (mOnZoomListener != null) {
-                updateRect();
-                mOnZoomListener.onZoomEnd(VersoPageViewFragment.this, mPosition, mPages, scale, mDrawRect);
+                mOnZoomListener.onZoomEnd(new VersoZoomPanInfo(VersoPageViewFragment.this, scale, getZoomLayoutRect(view)));
             }
         }
 
@@ -308,24 +320,21 @@ public class VersoPageViewFragment extends Fragment {
         @Override
         public void onPanBegin(ZoomLayout view) {
             if (mOnPanListener != null) {
-                updateRect();
-                mOnPanListener.onPanBegin(VersoPageViewFragment.this, mPosition, mPages, mDrawRect);
+                mOnPanListener.onPanBegin(new VersoZoomPanInfo(VersoPageViewFragment.this, view.getScale(), getZoomLayoutRect(view)));
             }
         }
 
         @Override
         public void onPan(ZoomLayout view) {
             if (mOnPanListener != null) {
-                updateRect();
-                mOnPanListener.onPan(VersoPageViewFragment.this, mPosition, mPages, mDrawRect);
+                mOnPanListener.onPan(new VersoZoomPanInfo(VersoPageViewFragment.this, view.getScale(), getZoomLayoutRect(view)));
             }
         }
 
         @Override
         public void onPanEnd(ZoomLayout view) {
             if (mOnPanListener != null) {
-                updateRect();
-                mOnPanListener.onPanEnd(VersoPageViewFragment.this, mPosition, mPages, mDrawRect);
+                mOnPanListener.onPanEnd(new VersoZoomPanInfo(VersoPageViewFragment.this, view.getScale(), getZoomLayoutRect(view)));
             }
         }
 

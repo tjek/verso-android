@@ -51,12 +51,13 @@ public class VersoFragment extends Fragment {
     PageViewEventDispatcher mDispatcher;
     VersoOnLayoutChanged mVersoOnLayoutChanged;
 
-    OnPageChangeListener mPageChangeListener;
-    OnZoomListener mZoomListener;
-    OnPanListener mPanListener;
-    OnTapListener mTapListener;
-    OnDoubleTapListener mDoubleTapListener;
-    OnLongTapListener mLongTapListener;
+    List<OnPageChangeListener> mPageChangeListeners;
+    VersoPageViewFragment.OnZoomListener mZoomListener;
+    VersoPageViewFragment.OnPanListener mPanListener;
+    VersoPageViewFragment.OnTouchListener mTouchListener;
+    VersoPageViewFragment.OnTapListener mTapListener;
+    VersoPageViewFragment.OnDoubleTapListener mDoubleTapListener;
+    VersoPageViewFragment.OnLongTapListener mLongTapListener;
 
     @Nullable
     @Override
@@ -97,10 +98,8 @@ public class VersoFragment extends Fragment {
         public boolean onPreDraw() {
             updateVisiblePages();
             if (!mCurrentVisiblePages.isEmpty()) {
-                if (mPageChangeListener != null) {
-                    int[] pages = mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
-                    mPageChangeListener.onPagesChanged(getPosition(), pages, getPosition(), pages);
-                }
+                int[] pages = mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
+                dispatchOnPagesChanged(getPosition(), pages, getPosition(), pages);
                 mVersoViewPager.getViewTreeObserver().removeOnPreDrawListener(this);
                 return true;
             }
@@ -172,11 +171,9 @@ public class VersoFragment extends Fragment {
         private void scrollTo(int position) {
             int prevPos = mScrollPosition;
             mScrollPosition = position;
-            if (mPageChangeListener != null) {
-                int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
-                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mScrollPosition).getPages();
-                mPageChangeListener.onPagesScrolled(mScrollPosition, currentPages, prevPos, previousPages);
-            }
+            int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
+            int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mScrollPosition).getPages();
+            dispatchOnPagesScrolled(mScrollPosition, currentPages, prevPos, previousPages);
         }
 
         @Override
@@ -195,11 +192,9 @@ public class VersoFragment extends Fragment {
                 int prevPos = mCurrentPosition;
                 mCurrentPosition = position;
                 mScrollPosition = mCurrentPosition;
-                if (mPageChangeListener != null) {
-                    int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
-                    int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mCurrentPosition).getPages();
-                    mPageChangeListener.onPagesChanged(mCurrentPosition, currentPages, prevPos, previousPages);
-                }
+                int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
+                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mCurrentPosition).getPages();
+                dispatchOnPagesChanged(mCurrentPosition, currentPages, prevPos, previousPages);
             }
         }
 
@@ -239,12 +234,10 @@ public class VersoFragment extends Fragment {
             // There is new state in visible pages, we need to update
             mCurrentVisiblePages.clear();
             mCurrentVisiblePages.addAll(currentPages);
-            if (mPageChangeListener != null) {
-                mPageChangeListener.onVisiblePageIndexesChanged(
-                        getVisiblePages(),
-                        collectionToArray(added),
-                        collectionToArray(removed));
-            }
+            dispatchOnVisiblePageIndexesChanged(
+                    getVisiblePages(),
+                    collectionToArray(added),
+                    collectionToArray(removed));
         }
     }
 
@@ -443,6 +436,7 @@ public class VersoFragment extends Fragment {
             if (mVersoAdapter == null) {
                 mVersoAdapter = new VersoAdapter(getFragmentManager(), mVersoSpreadConfiguration);
                 mDispatcher = new PageViewEventDispatcher();
+                mVersoAdapter.setOnTouchListener(mDispatcher);
                 mVersoAdapter.setOnTapListener(mDispatcher);
                 mVersoAdapter.setOnDoubleTapListener(mDispatcher);
                 mVersoAdapter.setOnLongTapListener(mDispatcher);
@@ -460,6 +454,12 @@ public class VersoFragment extends Fragment {
             mVersoViewPager.setAdapter(null);
             mVersoViewPager.setCurrentItem(0);
         }
+    }
+
+    @Override
+    public void onPause() {
+        clearAdapter();
+        super.onPause();
     }
 
     /**
@@ -480,11 +480,17 @@ public class VersoFragment extends Fragment {
     }
 
     private class PageViewEventDispatcher implements
+            VersoPageViewFragment.OnTouchListener,
             VersoPageViewFragment.OnTapListener,
             VersoPageViewFragment.OnDoubleTapListener,
             VersoPageViewFragment.OnLongTapListener,
             VersoPageViewFragment.OnZoomListener,
             VersoPageViewFragment.OnPanListener {
+
+        @Override
+        public boolean onTouch(int action, VersoTapInfo info) {
+            return mTouchListener != null && mTouchListener.onTouch(action, info);
+        }
 
         @Override
         public boolean onTap(VersoTapInfo info) {
@@ -502,58 +508,110 @@ public class VersoFragment extends Fragment {
         }
 
         @Override
-        public void onZoomBegin(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect) {
-            if (mZoomListener != null) mZoomListener.onZoomBegin(pages, scale);
+        public void onZoomBegin(VersoZoomPanInfo info) {
+            if (mZoomListener != null) mZoomListener.onZoomBegin(info);
         }
 
         @Override
-        public void onZoom(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect) {
-            if (mZoomListener != null) mZoomListener.onZoom(pages, scale);
+        public void onZoom(VersoZoomPanInfo info) {
+            if (mZoomListener != null) mZoomListener.onZoom(info);
         }
 
         @Override
-        public void onZoomEnd(VersoPageViewFragment fragment, int position, int[] pages, float scale, Rect viewRect) {
-            if (mZoomListener != null) mZoomListener.onZoomEnd(pages, scale);
+        public void onZoomEnd(VersoZoomPanInfo info) {
+            if (mZoomListener != null) mZoomListener.onZoomEnd(info);
         }
 
         @Override
-        public void onPanBegin(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect) {
-            if (mPanListener != null) mPanListener.onPanBegin(pages, viewRect);
+        public void onPanBegin(VersoZoomPanInfo info) {
+            if (mPanListener != null) mPanListener.onPanBegin(info);
         }
 
         @Override
-        public void onPan(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect) {
-            if (mPanListener != null) mPanListener.onPan(pages, viewRect);
+        public void onPan(VersoZoomPanInfo info) {
+            if (mPanListener != null) mPanListener.onPan(info);
         }
 
         @Override
-        public void onPanEnd(VersoPageViewFragment fragment, int position, int[] pages, Rect viewRect) {
-            if (mPanListener != null) mPanListener.onPanEnd(pages, viewRect);
+        public void onPanEnd(VersoZoomPanInfo info) {
+            if (mPanListener != null) mPanListener.onPanEnd(info);
         }
 
     }
 
-    public void setOnPageChangeListener(OnPageChangeListener pageChangeListener) {
-        mPageChangeListener = pageChangeListener;
+    public void addOnPageChangeListener(OnPageChangeListener pageChangeListener) {
+        if (mPageChangeListeners == null) {
+            mPageChangeListeners = new ArrayList<>();
+        }
+        mPageChangeListeners.add(pageChangeListener);
     }
 
-    public void setOnPanListener(OnPanListener panListener) {
+    public void removeOnPageChangeListener(OnPageChangeListener pageChangeListener) {
+        if (mPageChangeListeners != null) {
+            mPageChangeListeners.remove(pageChangeListener);
+        }
+    }
+
+    public void clearOnPageChangeListeners() {
+        if (mPageChangeListeners != null) {
+            mPageChangeListeners.clear();
+        }
+    }
+
+    private void dispatchOnVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed) {
+        if (mPageChangeListeners != null) {
+            for (int i = 0, z = mPageChangeListeners.size(); i < z; i++) {
+                OnPageChangeListener listener = mPageChangeListeners.get(i);
+                if (listener != null) {
+                    listener.onVisiblePageIndexesChanged(pages, added, removed);
+                }
+            }
+        }
+    }
+
+    private void dispatchOnPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
+        if (mPageChangeListeners != null) {
+            for (int i = 0, z = mPageChangeListeners.size(); i < z; i++) {
+                OnPageChangeListener listener = mPageChangeListeners.get(i);
+                if (listener != null) {
+                    listener.onPagesScrolled(currentPosition, currentPages, previousPosition, previousPages);
+                }
+            }
+        }
+    }
+
+    private void dispatchOnPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
+        if (mPageChangeListeners != null) {
+            for (int i = 0, z = mPageChangeListeners.size(); i < z; i++) {
+                OnPageChangeListener listener = mPageChangeListeners.get(i);
+                if (listener != null) {
+                    listener.onPagesChanged(currentPosition, currentPages, previousPosition, previousPages);
+                }
+            }
+        }
+    }
+
+    public void setOnPanListener(VersoPageViewFragment.OnPanListener panListener) {
         mPanListener = panListener;
     }
 
-    public void setOnZoomListener(OnZoomListener zoomListener) {
+    public void setOnZoomListener(VersoPageViewFragment.OnZoomListener zoomListener) {
         mZoomListener = zoomListener;
     }
 
-    public void setOnTapListener(OnTapListener tapListener) {
+    public void setOnTouchListener(VersoPageViewFragment.OnTouchListener touchListener) {
+        mTouchListener = touchListener;
+    }
+
+    public void setOnTapListener(VersoPageViewFragment.OnTapListener tapListener) {
         mTapListener = tapListener;
     }
 
-    public void setOnDoubleTapListener(OnDoubleTapListener doubleTapListener) {
+    public void setOnDoubleTapListener(VersoPageViewFragment.OnDoubleTapListener doubleTapListener) {
         mDoubleTapListener = doubleTapListener;
     }
 
-    public void setOnLongTapListener(OnLongTapListener longTapListener) {
+    public void setOnLongTapListener(VersoPageViewFragment.OnLongTapListener longTapListener) {
         mLongTapListener = longTapListener;
     }
 
@@ -561,30 +619,6 @@ public class VersoFragment extends Fragment {
         void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
         void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
         void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed);
-    }
-
-    public interface OnZoomListener {
-        void onZoomBegin(int[] pages, float scale);
-        void onZoom(int[] pages, float scale);
-        void onZoomEnd(int[] pages, float scale);
-    }
-
-    public interface OnPanListener {
-        void onPanBegin(int[] pages, Rect viewRect);
-        void onPan(int[] pages, Rect viewRect);
-        void onPanEnd(int[] pages, Rect viewRect);
-    }
-
-    public interface OnTapListener {
-        boolean onTap(VersoTapInfo info);
-    }
-
-    public interface OnDoubleTapListener {
-        boolean onDoubleTap(VersoTapInfo info);
-    }
-
-    public interface OnLongTapListener {
-        void onLongTap(VersoTapInfo info);
     }
 
     private static class SavedState implements Parcelable {

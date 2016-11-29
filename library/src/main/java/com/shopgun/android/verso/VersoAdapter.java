@@ -17,6 +17,7 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
     private VersoSpreadConfiguration mConfiguration;
     private VersoPageViewFragment.OnZoomListener mOnZoomListener;
     private VersoPageViewFragment.OnPanListener mOnPanListener;
+    private VersoPageViewFragment.OnTouchListener mOnTouchListener;
     private VersoPageViewFragment.OnTapListener mOnTapListener;
     private VersoPageViewFragment.OnDoubleTapListener mOnDoubleTapListener;
     private VersoPageViewFragment.OnLongTapListener mOnLongTapListener;
@@ -38,6 +39,7 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
         VersoPageViewFragment fragment = (VersoPageViewFragment) super.instantiateItem(container, position);
         fragment.setOnZoomListener(mOnZoomListener);
         fragment.setOnPanListener(mOnPanListener);
+        fragment.setOnTouchlistener(mOnTouchListener);
         fragment.setOnTapListener(mOnTapListener);
         fragment.setOnDoubleTapListener(mOnDoubleTapListener);
         fragment.setOnLongTapListener(mOnLongTapListener);
@@ -66,6 +68,10 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
             }
         }
         return list;
+    }
+
+    public void setOnTouchListener(VersoPageViewFragment.OnTouchListener listener) {
+        mOnTouchListener = listener;
     }
 
     public void setOnTapListener(VersoPageViewFragment.OnTapListener listener) {
