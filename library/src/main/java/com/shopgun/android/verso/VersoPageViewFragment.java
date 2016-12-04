@@ -16,6 +16,7 @@ import com.shopgun.android.utils.NumberUtils;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class VersoPageViewFragment extends Fragment {
@@ -161,6 +162,14 @@ public class VersoPageViewFragment extends Fragment {
         return mSpreadOverlay;
     }
 
+    public int getSpreadPosition() {
+        return mPosition;
+    }
+
+    public int[] getPages() {
+        return Arrays.copyOf(mPages, mPages.length);
+    }
+
     public void setVersoSpreadConfiguration(VersoSpreadConfiguration configuration) {
         mVersoSpreadConfiguration = configuration;
     }
@@ -227,6 +236,18 @@ public class VersoPageViewFragment extends Fragment {
         }
     }
 
+    public boolean isScaled() {
+        return mZoomLayout.isScaled();
+    }
+
+    public boolean isScaling() {
+        return mZoomLayout.isScaling();
+    }
+
+    public boolean isTranslating() {
+        return mZoomLayout.isTranslating();
+    }
+
     public void getVisiblePages(Rect bounds, HashSet<Integer> result) {
         if (mZoomLayout == null) {
             return;
@@ -241,6 +262,23 @@ public class VersoPageViewFragment extends Fragment {
             mHitBounds.offsetTo(pos[0], pos[1]);
             if (Rect.intersects(bounds, mHitBounds)) {
                 result.add(mPages[i]);
+            }
+        }
+    }
+
+    protected void dispatchPageVisibilityChange(int[] added, int[] removed) {
+        if (!isAdded()) {
+            // If scrolling is too fast, the MessageQueue (or something related) can't keep up, and we crash...
+            // TODO: 01/12/16 Find a fix for this
+            return;
+        }
+        for (int i = 0; i < mPageContainer.getChildCount(); i++) {
+            View v = mPageContainer.getChildAt(i);
+            int page = mPages[i];
+            if (v instanceof VersoPageView) {
+                VersoPageView pv = (VersoPageView) v;
+                for (int a : added) if (a == page) pv.onVisible();
+                for (int r : removed) if (r == page) pv.onInvisible();
             }
         }
     }
