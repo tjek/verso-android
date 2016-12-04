@@ -3,6 +3,7 @@ package com.shopgun.android.verso;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -226,6 +227,10 @@ public class VersoFragment extends Fragment {
             return;
         }
         List<VersoPageViewFragment> fragments = mVersoAdapter.getVersoFragments();
+        if (fragments.isEmpty()) {
+            LogUtil.printStackTrace();
+            L.d(TAG, "fragments.isEmpty");
+        }
         HashSet<Integer> currentPages = new HashSet<>();
         for (VersoPageViewFragment f : fragments) {
             f.getVisiblePages(mViewPagerHitRect, currentPages);
@@ -234,12 +239,14 @@ public class VersoFragment extends Fragment {
         Collection<Integer> removed = diff(mCurrentVisiblePages, currentPages);
         if (!added.isEmpty() || !removed.isEmpty()) {
             // There is new state in visible pages, we need to update
+            int[] arrayAdded = collectionToArray(added);
+            int[] arrayRemoved = collectionToArray(removed);
+            for (VersoPageViewFragment f : fragments) {
+                f.dispatchPageVisibilityChange(arrayAdded, arrayRemoved);
+            }
             mCurrentVisiblePages.clear();
             mCurrentVisiblePages.addAll(currentPages);
-            dispatchOnVisiblePageIndexesChanged(
-                    getVisiblePages(),
-                    collectionToArray(added),
-                    collectionToArray(removed));
+            dispatchOnVisiblePageIndexesChanged(getVisiblePages(), arrayAdded, arrayRemoved);
         }
     }
 
@@ -335,7 +342,6 @@ public class VersoFragment extends Fragment {
      * @param page The page to turn to
      */
     public void setPage(int page) {
-        LogUtil.printMethod();
         if (page >= 0) {
             mPage = page;
             if (mVersoSpreadConfiguration != null) {
@@ -448,7 +454,7 @@ public class VersoFragment extends Fragment {
                 mVersoAdapter.setOnPanListener(mDispatcher);
             }
 
-            if (mVersoViewPager != null && mVersoSpreadConfiguration.hasData()) {
+            if (mVersoViewPager != null && mVersoViewPager.getAdapter() == null && mVersoSpreadConfiguration.hasData()) {
                 mVersoViewPager.setAdapter(mVersoAdapter);
                 setPage(mPage);
                 // Manually trigger the first pageChange event
@@ -629,6 +635,24 @@ public class VersoFragment extends Fragment {
         void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
         void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages);
         void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed);
+    }
+
+    public static class SimpleOnPageChangeListener implements OnPageChangeListener {
+
+        @Override
+        public void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
+
+        }
+
+        @Override
+        public void onPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
+
+        }
+
+        @Override
+        public void onVisiblePageIndexesChanged(int[] pages, int[] added, int[] removed) {
+
+        }
     }
 
     private static class SavedState implements Parcelable {
