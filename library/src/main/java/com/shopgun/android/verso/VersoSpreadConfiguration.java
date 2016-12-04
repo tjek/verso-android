@@ -28,6 +28,8 @@ public interface VersoSpreadConfiguration {
 
     int getSpreadPositionFromPage(int page);
 
+    int[] getPagesFromSpreadPosition(int spreadPosition);
+
     boolean hasData();
 
 }
