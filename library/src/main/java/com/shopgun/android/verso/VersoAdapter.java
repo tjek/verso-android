@@ -10,7 +10,7 @@ import com.shopgun.android.verso.utils.FragmentStatelessPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatelessPagerAdapter {
+public class VersoAdapter extends FragmentStatelessPagerAdapter {
 
     public static final String TAG = VersoAdapter.class.getSimpleName();
 
@@ -68,6 +68,11 @@ public class VersoAdapter<T extends View & VersoPageView> extends FragmentStatel
             }
         }
         return list;
+    }
+
+    @Override
+    public Fragment[] getFragments() {
+        return super.getFragments();
     }
 
     public void setOnTouchListener(VersoPageViewFragment.OnTouchListener listener) {
