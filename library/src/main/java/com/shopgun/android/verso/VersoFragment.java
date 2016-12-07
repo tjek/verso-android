@@ -391,7 +391,7 @@ public class VersoFragment extends Fragment {
         if (mCurrentOrientation != newConfig.orientation) {
             // To correctly destroy the state of the VersoAdapter
             // we will mimic the lifecycle of a fragment being destroyed and restored.
-            mSavedState = new SavedState(this);
+            onInternalPause();
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             notifyVersoConfigurationChanged();
             onRestoreState(mSavedState);
@@ -472,10 +472,14 @@ public class VersoFragment extends Fragment {
 
     @Override
     public void onPause() {
+        onInternalPause();
+        super.onPause();
+    }
+
+    private void onInternalPause() {
         // we'll have to save state manually because we clear the adapter
         mSavedState = new SavedState(this);
         clearAdapter();
-        super.onPause();
     }
 
     /**
