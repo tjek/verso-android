@@ -76,13 +76,15 @@ public class VersoFragment extends Fragment {
         mPageChangeDispatcher = new PageChangeDispatcher();
         mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
 
-        // Omit the left/right edge compat, and use over-scrolling instead
-        mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
-
         if (savedInstanceState != null) {
             mSavedState = savedInstanceState.getParcelable(SAVED_STATE);
         }
         onRestoreState(mSavedState);
+
+        // Omit the left/right edge compat, and use over-scrolling instead
+        if (mBounceDecoreEnabled) {
+            mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
+        }
 
         return mVersoViewPager;
     }
@@ -327,8 +329,9 @@ public class VersoFragment extends Fragment {
         return new int[]{};
     }
 
-    public void setBounceDecoreEnabled(boolean bounce) {
-        mBounceDecoreEnabled = bounce;
+    public void enableBounceDecore() {
+        // Omit the left/right edge compat, and use over-scrolling instead
+        mBounceDecoreEnabled = true;
     }
 
     public boolean isBounceDecoreEnabled() {
@@ -422,7 +425,9 @@ public class VersoFragment extends Fragment {
 
     protected void onRestoreState(SavedState ss) {
         if (ss != null) {
-            mBounceDecoreEnabled = ss.bounceDecore;
+            if (ss.bounceDecore) {
+                enableBounceDecore();
+            }
             mCurrentVisiblePages.clear();
             for (int page : ss.visiblePages) {
                 mCurrentVisiblePages.add(page);
@@ -666,7 +671,7 @@ public class VersoFragment extends Fragment {
         int[] visiblePages;
 
         private SavedState(VersoFragment f) {
-            bounceDecore = f.mBounceDecoreEnabled;
+            bounceDecore = f.isBounceDecoreEnabled();
             pages = f.getCurrentPages();
             pages = Arrays.copyOf(pages, pages.length);
             visiblePages = f.getVisiblePages();
