@@ -84,6 +84,8 @@ public class VersoPageViewFragment extends Fragment {
         mZoomLayout.setMinScale(mProperty.getMinZoomScale());
         mZoomLayout.setMaxScale(mProperty.getMaxZoomScale());
 
+        mZoomLayout.setZoomDuration(150);
+
         mPageContainer = (VersoHorizontalLayout) mZoomLayout.findViewById(R.id.verso_pages_container);
         for (int page : mPages) {
             View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
