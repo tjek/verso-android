@@ -105,32 +105,22 @@ public class ImageViewConfiguration implements VersoSpreadConfiguration {
     }
 
     @Override
+    public int[] getPagesFromSpreadPosition(int spreadPosition) {
+        if (mOrientation.isLandscape() && spreadPosition > 0) {
+            int page = spreadPosition * 2;
+            return new int[]{ page, page+1 };
+        }
+        return new int[spreadPosition];
+    }
+
+    @Override
+    public boolean hasData() {
+        return true;
+    }
+
+    @Override
     public View getSpreadOverlay(ViewGroup container, int[] pages) {
-        return new SpreadLayoutImpl(container.getContext(), pages);
+        return null;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-    }
-
-    protected ImageViewConfiguration(Parcel in) {
-        this();
-    }
-
-    public static final Creator<ImageViewConfiguration> CREATOR = new Creator<ImageViewConfiguration>() {
-        @Override
-        public ImageViewConfiguration createFromParcel(Parcel source) {
-            return new ImageViewConfiguration(source);
-        }
-
-        @Override
-        public ImageViewConfiguration[] newArray(int size) {
-            return new ImageViewConfiguration[size];
-        }
-    };
 }

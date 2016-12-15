@@ -1,6 +1,5 @@
 package com.shopgun.android.verso.sample;
 
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
@@ -8,7 +7,10 @@ import android.widget.Toast;
 
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.verso.VersoFragment;
+import com.shopgun.android.verso.VersoPageViewFragment;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
+import com.shopgun.android.verso.VersoTapInfo;
+import com.shopgun.android.verso.VersoZoomPanInfo;
 
 import java.util.Locale;
 
@@ -35,13 +37,13 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
         VersoFragment fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
         if (fragment == null) {
             fragment = new VersoFragment();
-            fragment.setOverscrollDecoreBounce(true);
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.verso, fragment, FRAG_TAG)
                     .addToBackStack(FRAG_TAG)
                     .commit();
         }
+        fragment.enableBounceDecore();
         fragment.setVersoSpreadConfiguration(getSpreadConfiguration());
         setupListeners(fragment);
 
@@ -54,7 +56,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
 
     private void setupListeners(VersoFragment fragment) {
 
-        fragment.setOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
+        fragment.addOnPageChangeListener(new VersoFragment.OnPageChangeListener() {
             @Override
             public void onPagesScrolled(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
                 mPagesInfoScroll = make("onScroll   ", currentPosition, currentPages, previousPosition, previousPages);
@@ -86,96 +88,79 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
             }
 
         });
-        fragment.setOnZoomListener(new VersoFragment.OnZoomListener() {
+        fragment.setOnZoomListener(new VersoPageViewFragment.OnZoomListener() {
             @Override
-            public void onZoomBegin(int[] pages, float scale) {
-                log("onZoomBegin", pages, scale);
+            public void onZoomBegin(VersoZoomPanInfo info) {
+                log("onZoomBegin", info);
             }
 
             @Override
-            public void onZoom(int[] pages, float scale) {
-                log("onZoom     ", pages, scale);
+            public void onZoom(VersoZoomPanInfo info) {
+                log("onZoom     ", info);
             }
 
             @Override
-            public void onZoomEnd(int[] pages, float scale) {
-                log("onZoomEnd  ", pages, scale);
+            public void onZoomEnd(VersoZoomPanInfo info) {
+                log("onZoomEnd  ", info);
             }
 
-            private void log(String what, int[] pages, float scale) {
-                mZoomInfo = String.format(Locale.US, "%s[pages:%s, scale:%.2f]", what, TextUtils.join(",", pages), scale);
+            private void log(String what, VersoZoomPanInfo info) {
+                mZoomInfo = String.format(Locale.US, "%s[pages:%s, scale:%.2f]", what, TextUtils.join(",", info.getPages()), info.getScale());
                 updateInfo();
             }
 
         });
 
-        fragment.setOnPanListener(new VersoFragment.OnPanListener() {
+        fragment.setOnPanListener(new VersoPageViewFragment.OnPanListener() {
             @Override
-            public void onPanBegin(int[] pages, Rect viewRect) {
-                log("onPanBegin ", pages, viewRect);
+            public void onPanBegin(VersoZoomPanInfo info) {
+                log("onPanBegin ", info);
             }
 
             @Override
-            public void onPan(int[] pages, Rect viewRect) {
-                log("onPan      ", pages, viewRect);
+            public void onPan(VersoZoomPanInfo info) {
+                log("onPan ", info);
             }
 
             @Override
-            public void onPanEnd(int[] pages, Rect viewRect) {
-                log("onPanEnd   ", pages, viewRect);
+            public void onPanEnd(VersoZoomPanInfo info) {
+                log("onPanEnd ", info);
             }
 
-            private void log(String what, int[] pages, Rect rect) {
-                mPanInfo = String.format(Locale.US, "%s[pages:%s, rect:%s]", what, TextUtils.join(",", pages), rect.toShortString());
+            private void log(String what, VersoZoomPanInfo info) {
+                mPanInfo = String.format(Locale.US, "%s[pages:%s, rect:%s]", what, TextUtils.join(",", info.getPages()), info.getViewRect().toShortString());
                 updateInfo();
             }
 
         });
 
-        fragment.setOnTapListener(new VersoFragment.OnTapListener() {
+        fragment.setOnTapListener(new VersoPageViewFragment.OnTapListener() {
             @Override
-            public boolean onContentTap(int[] pages, float absX, float absY, float relX, float relY) {
-                toast("onContentTap", pages, relX, relY);
-                return true;
-            }
-
-            @Override
-            public boolean onViewTap(int[] pages, float absX, float absY) {
-                toast("onViewTap", pages, absX, absY);
-                return true;
-            }
-        });
-
-        fragment.setOnDoubleTapListener(new VersoFragment.OnDoubleTapListener() {
-            @Override
-            public boolean onContentDoubleTap(int[] pages, float absX, float absY, float relX, float relY) {
-                toast("onContentDoubleTap", pages, absX, absY);
-                return false;
-            }
-
-            @Override
-            public boolean onViewDoubleTap(int[] pages, float absX, float absY) {
-                toast("onViewDoubleTap", pages, absX, absY);
+            public boolean onTap(VersoTapInfo info) {
+                toast("onTap", info);
                 return false;
             }
         });
 
-        fragment.setOnLongTapListener(new VersoFragment.OnLongTapListener() {
+        fragment.setOnDoubleTapListener(new VersoPageViewFragment.OnDoubleTapListener() {
             @Override
-            public void onContentLongTap(int[] pages, float absX, float absY, float relX, float relY) {
-                toast("onContentLongTap", pages, relX, relY);
+            public boolean onDoubleTap(VersoTapInfo info) {
+                toast("onDoubleTap", info);
+                return false;
             }
+        });
 
+        fragment.setOnLongTapListener(new VersoPageViewFragment.OnLongTapListener() {
             @Override
-            public void onViewLongTap(int[] pages, float absX, float absY) {
-                toast("onViewLongTap", pages, absX, absY);
+            public void onLongTap(VersoTapInfo info) {
+                toast("onLongTap", info);
             }
         });
 
     }
 
-    private void toast(String what, int[] pages, float x, float y) {
-        String text = String.format(Locale.US, "%s[ pages:%s, x:%.0f, y:%.0f ]", what, TextUtils.join(",", pages), x, y);
+    private void toast(String what, VersoTapInfo info) {
+        String text = String.format(Locale.US, "%s[ pages:%s, x:%.0f, y:%.0f ]", what, info.getPageTapped(), info.getPercentX(), info.getPercentY());
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 

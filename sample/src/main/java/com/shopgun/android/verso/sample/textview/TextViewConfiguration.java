@@ -51,6 +51,16 @@ public class TextViewConfiguration implements VersoSpreadConfiguration {
             return page;
         }
 
+    @Override
+    public int[] getPagesFromSpreadPosition(int spreadPosition) {
+        return new int[spreadPosition];
+    }
+
+    @Override
+    public boolean hasData() {
+        return true;
+    }
+
     private class VersoTextView extends TextView implements VersoPageView {
 
         private float mTextSize = 30;
@@ -98,27 +108,4 @@ public class TextViewConfiguration implements VersoSpreadConfiguration {
         return new SpreadLayoutImpl(container.getContext(), pages);
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) { }
-
-    protected TextViewConfiguration(Parcel in) {
-
-    }
-
-    public static final Creator<TextViewConfiguration> CREATOR = new Creator<TextViewConfiguration>() {
-        @Override
-        public TextViewConfiguration createFromParcel(Parcel source) {
-            return new TextViewConfiguration(source);
-        }
-
-        @Override
-        public TextViewConfiguration[] newArray(int size) {
-            return new TextViewConfiguration[size];
-        }
-    };
 }
