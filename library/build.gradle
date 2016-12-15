@@ -39,8 +39,10 @@ ext {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
+
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 24
@@ -57,15 +59,17 @@ android {
 }
 
 dependencies {
-    compile 'com.shopgun.android:utils:1.0.6'
-//    compile 'com.shopgun.android:zoomlayout:0.1.0'
-    compile project(':zoomlayout')
-    compile 'me.everything:overscroll-decor-android:1.0.3'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+
+    def libs = rootProject.libDependencies
+    compile libs.markhor
+    compile libs.appcompat
+    compile libs.zoomlayout
+    compile libs.overscrollDecor
+    androidTestCompile(libs.espresso, {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    testCompile 'junit:junit:4.12'
+    testCompile libs.junit
+
 }
 
 // Apply the Bintray plugin. Do release with "gradlew bintrayUpload"
