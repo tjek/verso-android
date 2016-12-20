@@ -34,7 +34,7 @@ public class VersoPageViewFragment extends Fragment {
     }
 
     // Views
-    protected ZoomLayout mZoomLayout;
+    private ZoomLayout mZoomLayout;
     private VersoHorizontalLayout mPageContainer;
     private View mSpreadOverlay;
     private OverlaySizer mOverlaySizer;
@@ -87,14 +87,6 @@ public class VersoPageViewFragment extends Fragment {
         mZoomLayout.setZoomDuration(180);
 
         mPageContainer = (VersoHorizontalLayout) mZoomLayout.findViewById(R.id.verso_pages_container);
-        for (int page : mPages) {
-            View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
-            if (!(view instanceof VersoPageView)) {
-                throw new IllegalArgumentException("The view must implement VersoPageView");
-            }
-            mPageContainer.addView(view);
-        }
-
         mSpreadOverlay = mVersoSpreadConfiguration.getSpreadOverlay(mZoomLayout, mPages);
         if (mSpreadOverlay != null) {
             mZoomLayout.addView(mSpreadOverlay);
@@ -107,8 +99,19 @@ public class VersoPageViewFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        addVersoPageviews();
         mOverlaySizer = new OverlaySizer();
         mPageContainer.addOnLayoutChangeListener(mOverlaySizer);
+    }
+
+    private void addVersoPageviews() {
+        for (int page : mPages) {
+            View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
+            if (!(view instanceof VersoPageView)) {
+                throw new IllegalArgumentException("The view must implement VersoPageView");
+            }
+            mPageContainer.addView(view);
+        }
     }
 
     @Override
@@ -116,6 +119,7 @@ public class VersoPageViewFragment extends Fragment {
         super.onStop();
         mPageContainer.removeOnLayoutChangeListener(mOverlaySizer);
         mOverlaySizer = null;
+        mPageContainer.removeAllViews();
     }
 
     class OverlaySizer implements View.OnLayoutChangeListener {
