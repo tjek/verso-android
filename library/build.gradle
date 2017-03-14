@@ -13,31 +13,6 @@ buildscript {
     }
 }
 
-ext {
-
-    PROJ_DRYRUN=false
-
-    PROJ_REPO='maven'
-    PROJ_GROUP='com.shopgun.android'
-    PROJ_ARTIFACTID='verso'
-    PROJ_VERSION='0.8.0'
-    PROJ_NAME='verso'
-    PROJ_ORG='shopgun'
-    PROJ_WEBSITEURL='https://shopgun.com'
-    PROJ_ISSUETRACKERURL='https://github.com/shopgun/verso-android/issues'
-    PROJ_VCSURL='https://github.com/shopgun/verso-android.git'
-    PROJ_DESCRIPTION='A multi-paged viewer for Android.'
-    PROJ_LABELS=['shopgun', 'android', 'sdk', 'api', 'etilbudsavis', 'multi-paged']
-
-    DEVELOPER_ID='shopgun'
-    DEVELOPER_NAME='ShopGun'
-    DEVELOPER_EMAIL='danny@shopgun.com'
-
-    LICENSE_ALL=["Apache-2.0"]
-    LICENSE_NAME='The Apache Software License, Version 2.0'
-    LICENSE_URL='http://www.apache.org/licenses/LICENSE-2.0.txt'
-}
-
 android {
 
     compileSdkVersion rootProject.compileSdkVersion
