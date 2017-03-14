@@ -230,8 +230,8 @@ public class VersoFragment extends Fragment {
         }
         List<VersoPageViewFragment> fragments = mVersoAdapter.getVersoFragments();
         if (fragments.isEmpty()) {
-            LogUtil.printStackTrace();
-            L.d(TAG, "fragments.isEmpty");
+            // this happens e.g. when hotspots are loaded - the mFragments in VersoAdapter is cleared
+            return;
         }
         HashSet<Integer> currentPages = new HashSet<>();
         for (VersoPageViewFragment f : fragments) {

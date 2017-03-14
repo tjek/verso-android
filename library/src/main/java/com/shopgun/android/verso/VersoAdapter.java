@@ -57,7 +57,7 @@ public class VersoAdapter extends FragmentStatelessPagerAdapter {
     }
 
     public VersoPageViewFragment getVersoFragment(ViewGroup container, int position) {
-        return (VersoPageViewFragment) instantiateItem(container, position);
+        return (VersoPageViewFragment) getItem(position);
     }
 
     public List<VersoPageViewFragment> getVersoFragments() {
