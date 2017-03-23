@@ -52,6 +52,7 @@ public class VersoPageViewFragment extends Fragment {
     private OnTapListener mOnTapListener;
     private OnDoubleTapListener mOnDoubleTapListener;
     private OnLongTapListener mOnLongTapListener;
+    private OnLoadCompleteListener mOnLoadCompleteListener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,8 +108,10 @@ public class VersoPageViewFragment extends Fragment {
     private void addVersoPageviews() {
         for (int page : mPages) {
             View view = mVersoSpreadConfiguration.getPageView(mPageContainer, page);
-            if (!(view instanceof VersoPageView)) {
-                throw new IllegalArgumentException("The view must implement VersoPageView");
+            try {
+                ((VersoPageView)view).setOnLoadCompleteListener(mOnLoadCompleteListener);
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException("The view must implement VersoPageView", e);
             }
             mPageContainer.addView(view);
         }
@@ -204,6 +207,10 @@ public class VersoPageViewFragment extends Fragment {
         mOnPanListener = listener;
     }
 
+    public void setOnLoadCompleteListener(OnLoadCompleteListener listener) {
+        mOnLoadCompleteListener = listener;
+    }
+
     public interface OnTouchListener {
         boolean onTouch(int action, VersoTapInfo info);
     }
@@ -230,6 +237,10 @@ public class VersoPageViewFragment extends Fragment {
         void onPanBegin(VersoZoomPanInfo info);
         void onPan(VersoZoomPanInfo info);
         void onPanEnd(VersoZoomPanInfo info);
+    }
+
+    public interface OnLoadCompleteListener {
+        void onPageLoadComplete(boolean success, VersoPageView versoPageView);
     }
 
     public void dispatchZoom(float scale) {

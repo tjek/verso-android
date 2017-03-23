@@ -21,6 +21,7 @@ public class VersoAdapter extends FragmentStatelessPagerAdapter {
     private VersoPageViewFragment.OnTapListener mOnTapListener;
     private VersoPageViewFragment.OnDoubleTapListener mOnDoubleTapListener;
     private VersoPageViewFragment.OnLongTapListener mOnLongTapListener;
+    private VersoPageViewFragment.OnLoadCompleteListener mOnLoadCompleteListener;
 
     public VersoAdapter(FragmentManager fragmentManager, VersoSpreadConfiguration configuration) {
         super(fragmentManager);
@@ -43,6 +44,7 @@ public class VersoAdapter extends FragmentStatelessPagerAdapter {
         fragment.setOnTapListener(mOnTapListener);
         fragment.setOnDoubleTapListener(mOnDoubleTapListener);
         fragment.setOnLongTapListener(mOnLongTapListener);
+        fragment.setOnLoadCompleteListener(mOnLoadCompleteListener);
         return fragment;
     }
 
@@ -97,6 +99,10 @@ public class VersoAdapter extends FragmentStatelessPagerAdapter {
 
     public void setOnPanListener(VersoPageViewFragment.OnPanListener listener) {
         mOnPanListener = listener;
+    }
+
+    public void setOnLoadCompleteListener(VersoPageViewFragment.OnLoadCompleteListener listener) {
+        mOnLoadCompleteListener = listener;
     }
 
 }

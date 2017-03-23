@@ -3,7 +3,6 @@ package com.shopgun.android.verso;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -17,7 +16,6 @@ import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.utils.log.L;
-import com.shopgun.android.utils.log.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +59,7 @@ public class VersoFragment extends Fragment {
     VersoPageViewFragment.OnTapListener mTapListener;
     VersoPageViewFragment.OnDoubleTapListener mDoubleTapListener;
     VersoPageViewFragment.OnLongTapListener mLongTapListener;
+    VersoPageViewFragment.OnLoadCompleteListener mLoadCompleteListener;
 
     @Nullable
     @Override
@@ -457,6 +456,7 @@ public class VersoFragment extends Fragment {
                 mVersoAdapter.setOnLongTapListener(mDispatcher);
                 mVersoAdapter.setOnZoomListener(mDispatcher);
                 mVersoAdapter.setOnPanListener(mDispatcher);
+                mVersoAdapter.setOnLoadCompleteListener(mLoadCompleteListener);
             }
 
             if (mVersoViewPager != null && mVersoViewPager.getAdapter() == null && mVersoSpreadConfiguration.hasData()) {
@@ -510,7 +510,8 @@ public class VersoFragment extends Fragment {
             VersoPageViewFragment.OnDoubleTapListener,
             VersoPageViewFragment.OnLongTapListener,
             VersoPageViewFragment.OnZoomListener,
-            VersoPageViewFragment.OnPanListener {
+            VersoPageViewFragment.OnPanListener,
+            VersoPageViewFragment.OnLoadCompleteListener {
 
         @Override
         public boolean onTouch(int action, VersoTapInfo info) {
@@ -560,6 +561,11 @@ public class VersoFragment extends Fragment {
         @Override
         public void onPanEnd(VersoZoomPanInfo info) {
             if (mPanListener != null) mPanListener.onPanEnd(info);
+        }
+
+        @Override
+        public void onPageLoadComplete(boolean success, VersoPageView versoPageView) {
+            if (mLoadCompleteListener != null) mLoadCompleteListener.onPageLoadComplete(success, versoPageView);
         }
 
     }
@@ -638,6 +644,10 @@ public class VersoFragment extends Fragment {
 
     public void setOnLongTapListener(VersoPageViewFragment.OnLongTapListener longTapListener) {
         mLongTapListener = longTapListener;
+    }
+
+    public void setOnLoadCompleteListener(VersoPageViewFragment.OnLoadCompleteListener listener) {
+        mLoadCompleteListener = listener;
     }
 
     public interface OnPageChangeListener {
