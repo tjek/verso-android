@@ -15,7 +15,10 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.TextUtils;
+import com.shopgun.android.utils.ToStringUtils;
 import com.shopgun.android.utils.log.L;
+import com.shopgun.android.utils.log.LogUtil;
+import com.shopgun.android.verso.utils.OnPageChangeListenerLogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +81,7 @@ public class VersoFragment extends Fragment {
         if (savedInstanceState != null) {
             mSavedState = savedInstanceState.getParcelable(SAVED_STATE);
         }
-        onRestoreState(mSavedState);
+        onRestoreState();
 
         // Omit the left/right edge compat, and use over-scrolling instead
         if (mBounceDecoreEnabled) {
@@ -102,8 +105,10 @@ public class VersoFragment extends Fragment {
         public boolean onPreDraw() {
             updateVisiblePages();
             if (!mCurrentVisiblePages.isEmpty()) {
-                int[] pages = mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
-                dispatchOnPagesChanged(getPosition(), pages, getPosition(), pages);
+                if (mVersoAdapter == null) {
+                    int[] pages = mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
+                    dispatchOnPagesChanged(getPosition(), pages, getPosition(), pages);
+                }
                 mVersoViewPager.getViewTreeObserver().removeOnPreDrawListener(this);
                 return true;
             }
@@ -117,6 +122,7 @@ public class VersoFragment extends Fragment {
 
         int mState = ViewPager.SCROLL_STATE_IDLE;
         int mCurrentPosition = 0;
+        int[] mCurrentPages = new int[]{};
         int mScrollPosition = 0;
         Rect mFragmentHitRect = new Rect();
         float mLastOffset = 0;
@@ -193,12 +199,12 @@ public class VersoFragment extends Fragment {
 
         private void moveTo(int position) {
             if (mState == ViewPager.SCROLL_STATE_IDLE && mCurrentPosition != position ) {
-                int prevPos = mCurrentPosition;
-                mCurrentPosition = position;
-                mScrollPosition = mCurrentPosition;
-                int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
-                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mCurrentPosition).getPages();
-                dispatchOnPagesChanged(mCurrentPosition, currentPages, prevPos, previousPages);
+                int[] pages = mVersoSpreadConfiguration.getSpreadProperty(position).getPages();
+                if (mCurrentPages.length == 0) {
+                    mCurrentPosition = position;
+                    mCurrentPages = pages;
+                }
+                dispatchOnPagesChanged(position, pages, mCurrentPosition, mCurrentPages);
             }
         }
 
@@ -322,8 +328,7 @@ public class VersoFragment extends Fragment {
 
     public int[] getCurrentPages() {
         if (mVersoSpreadConfiguration != null) {
-            VersoSpreadProperty property = mVersoSpreadConfiguration.getSpreadProperty(getPosition());
-            return property.getPages();
+            return mVersoSpreadConfiguration.getSpreadProperty(getPosition()).getPages();
         }
         return new int[]{};
     }
@@ -391,17 +396,19 @@ public class VersoFragment extends Fragment {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (mCurrentOrientation != newConfig.orientation) {
+            mVersoViewPager.removeOnPageChangeListener(mPageChangeDispatcher);
             // To correctly destroy the state of the VersoAdapter
             // we will mimic the lifecycle of a fragment being destroyed and restored.
             onInternalPause();
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             notifyVersoConfigurationChanged();
-            onRestoreState(mSavedState);
+            mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
+            onRestoreState();
             onInternalResume(newConfig);
         }
     }
 
-    private void onInternalResume(Configuration config) {
+    protected void onInternalResume(Configuration config) {
         mCurrentOrientation = config.orientation;
         if (mVersoSpreadConfiguration != null) {
             mVersoSpreadConfiguration.onConfigurationChanged(config);
@@ -422,17 +429,21 @@ public class VersoFragment extends Fragment {
         return mVersoSpreadConfiguration;
     }
 
-    protected void onRestoreState(SavedState ss) {
-        if (ss != null) {
-            if (ss.bounceDecore) {
+    protected void onRestoreState() {
+        if (mSavedState != null) {
+            if (mSavedState.bounceDecore) {
                 enableBounceDecore();
             }
             mCurrentVisiblePages.clear();
-            for (int page : ss.visiblePages) {
+            for (int page : mSavedState.visiblePages) {
                 mCurrentVisiblePages.add(page);
             }
-            if (ss.pages != null && ss.pages.length > 0) {
-                setPage(ss.pages[0]);
+            if (mSavedState.pages.length > 0) {
+                mPage = mSavedState.pages[0];
+                int spread = mVersoSpreadConfiguration.getSpreadPositionFromPage(mPage);
+                int[] pages = mVersoSpreadConfiguration.getPagesFromSpreadPosition(spread);
+                mVersoViewPager.setCurrentItem(spread);
+                dispatchOnPagesChanged(spread, pages, mSavedState.position, mSavedState.pages);
             }
         }
         mSavedState = null;
@@ -463,9 +474,13 @@ public class VersoFragment extends Fragment {
                 mVersoViewPager.setAdapter(mVersoAdapter);
                 setPage(mPage);
                 // Manually trigger the first pageChange event
-                int pos = mVersoViewPager.getCurrentItem();
-                int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(pos).getPages();
-                dispatchOnPagesChanged(pos, currentPages, pos, currentPages);
+                if (mSavedState == null) {
+                    int pos = mVersoViewPager.getCurrentItem();
+                    if (mPageChangeDispatcher.mCurrentPosition != pos) {
+                        int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(pos).getPages();
+                        dispatchOnPagesChanged(pos, currentPages, pos, currentPages);
+                    }
+                }
             }
 
         } else if (mVersoViewPager != null) {
@@ -481,7 +496,7 @@ public class VersoFragment extends Fragment {
         super.onPause();
     }
 
-    private void onInternalPause() {
+    protected void onInternalPause() {
         // we'll have to save state manually because we clear the adapter
         mSavedState = new SavedState(this);
         clearAdapter();
@@ -612,6 +627,9 @@ public class VersoFragment extends Fragment {
     }
 
     private void dispatchOnPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
+        mPageChangeDispatcher.mCurrentPosition = currentPosition;
+        mPageChangeDispatcher.mScrollPosition = currentPosition;
+        mPageChangeDispatcher.mCurrentPages = currentPages;
         if (mPageChangeListeners != null) {
             for (int i = 0, z = mPageChangeListeners.size(); i < z; i++) {
                 OnPageChangeListener listener = mPageChangeListeners.get(i);
@@ -677,12 +695,14 @@ public class VersoFragment extends Fragment {
     private static class SavedState implements Parcelable {
 
         boolean bounceDecore = false;
+        int position;
         int[] pages;
         int[] visiblePages;
 
         private SavedState(VersoFragment f) {
             bounceDecore = f.isBounceDecoreEnabled();
-            pages = f.getCurrentPages();
+            position = f.mPageChangeDispatcher.mCurrentPosition;
+            pages = f.mPageChangeDispatcher.mCurrentPages;
             pages = Arrays.copyOf(pages, pages.length);
             visiblePages = f.getVisiblePages();
             visiblePages = Arrays.copyOf(visiblePages, visiblePages.length);
@@ -696,12 +716,14 @@ public class VersoFragment extends Fragment {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeByte(this.bounceDecore ? (byte) 1 : (byte) 0);
+            dest.writeInt(this.position);
             dest.writeIntArray(this.pages);
             dest.writeIntArray(this.visiblePages);
         }
 
         protected SavedState(Parcel in) {
             this.bounceDecore = in.readByte() != 0;
+            this.position = in.readInt();
             this.pages = in.createIntArray();
             this.visiblePages = in.createIntArray();
         }
@@ -720,8 +742,8 @@ public class VersoFragment extends Fragment {
 
         @Override
         public String toString() {
-            return String.format("SavedState[ bounceDecore:%s, pages:%s, visiblePages:%s ]",
-                    bounceDecore, TextUtils.join(pages), TextUtils.join(visiblePages));
+            String f = "SavedState[ position:%s pages: %s, visiblePages:%s , bounceDecore:%s]";
+            return String.format(Locale.US, f, position, TextUtils.join(pages), TextUtils.join(visiblePages), bounceDecore);
         }
     }
 
