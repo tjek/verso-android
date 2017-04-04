@@ -227,6 +227,10 @@ public class VersoFragment extends Fragment {
         }
     }
 
+    public VersoViewPager getVersoViewPager() {
+        return mVersoViewPager;
+    }
+
     /**
      * Determine if there is any change to the currently visible VersoPageView's in the ViewPager.
      * If so,  callbacks will be triggered.
@@ -371,7 +375,7 @@ public class VersoFragment extends Fragment {
         if (position >= 0 &&
                 mVersoViewPager != null &&
                 mVersoViewPager.getCurrentItem() != position) {
-            mVersoViewPager.setCurrentItem(position);
+            mVersoViewPager.setPosition(position, false);
         }
     }
 
@@ -379,14 +383,14 @@ public class VersoFragment extends Fragment {
      * Go to the next page in the catalog
      */
     public void nextPage() {
-        mVersoViewPager.setCurrentItem(getPosition() + 1, true);
+        mVersoViewPager.setPosition(getPosition() + 1, true);
     }
 
     /**
      * Go to the previous page in the catalog
      */
     public void previousPage() {
-        mVersoViewPager.setCurrentItem(getPosition() - 1, true);
+        mVersoViewPager.setPosition(getPosition() - 1, true);
     }
 
     @Override
@@ -445,7 +449,7 @@ public class VersoFragment extends Fragment {
                 mPage = mSavedState.pages[0];
                 int spread = mVersoSpreadConfiguration.getSpreadPositionFromPage(mPage);
                 int[] pages = mVersoSpreadConfiguration.getPagesFromSpreadPosition(spread);
-                mVersoViewPager.setCurrentItem(spread);
+                mVersoViewPager.setPosition(spread);
                 dispatchOnPagesChanged(spread, pages, mSavedState.position, mSavedState.pages);
             }
         }
@@ -477,19 +481,17 @@ public class VersoFragment extends Fragment {
                 mVersoViewPager.setAdapter(mVersoAdapter);
                 setPage(mPage);
                 // Manually trigger the first pageChange event
-                if (mSavedState == null) {
+                if (mPageChangeDispatcher.mCurrentPages.length == 0) {
                     int pos = mVersoViewPager.getCurrentItem();
-                    if (mPageChangeDispatcher.mCurrentPosition != pos) {
-                        int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(pos).getPages();
-                        dispatchOnPagesChanged(pos, currentPages, pos, currentPages);
-                    }
+                    int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(pos).getPages();
+                    dispatchOnPagesChanged(pos, currentPages, pos, currentPages);
                 }
             }
 
         } else if (mVersoViewPager != null) {
             mVersoAdapter = null;
             mVersoViewPager.setAdapter(null);
-            mVersoViewPager.setCurrentItem(0);
+            mVersoViewPager.setPosition(0);
         }
     }
 
