@@ -125,7 +125,11 @@ public class VersoPageViewFragment extends Fragment {
         mPageContainer.removeAllViews();
     }
 
-    class OverlaySizer implements View.OnLayoutChangeListener {
+    public ZoomLayout getZoomLayout() {
+        return mZoomLayout;
+    }
+
+    private class OverlaySizer implements View.OnLayoutChangeListener {
 
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
