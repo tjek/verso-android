@@ -541,10 +541,10 @@ public class VersoFragment extends Fragment {
         return f != null && f.isScaled();
     }
 
-    public void resetCurrentSpreadScale() {
+    public void resetCurrentSpreadScale(boolean animate) {
         VersoPageViewFragment f = getCurrentFragment();
         if (f != null && f.getZoomLayout() != null) {
-            f.getZoomLayout().setScale(1.0f, true);
+            f.getZoomLayout().setScale(1.0f, animate);
         }
     }
 
