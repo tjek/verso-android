@@ -58,9 +58,9 @@ public abstract class FragmentStatelessPagerAdapter extends FragmentStatePagerAd
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         ensureFragmentArray();
-        Object o = super.instantiateItem(container, position);
-        mFragments[position] = (Fragment)o;
-        return o;
+        Fragment f = (Fragment) super.instantiateItem(container, position);
+        mFragments[position] = f;
+        return f;
     }
 
     @Override
@@ -79,13 +79,7 @@ public abstract class FragmentStatelessPagerAdapter extends FragmentStatePagerAd
      */
     public void clearState() {
         ensureFragmentArray();
-        // Clear the remaining fragments from FragmentManager
-        for (int i = 0; i < mFragments.length; i++) {
-            Fragment f = mFragments[i];
-            if (f != null) {
-                destroyItem(null, i, f);
-            }
-        }
+        clearFragmentsFromFragmentManager();
     }
 
     @Override
@@ -115,11 +109,34 @@ public abstract class FragmentStatelessPagerAdapter extends FragmentStatePagerAd
         if (mFragments == null) {
             mFragments = new Fragment[getCount()];
         }
+        if (mFragments.length != getCount()) {
+            clearFragmentsFromFragmentManager();
+            mFragments = new Fragment[getCount()];
+        }
+    }
+
+    /**
+     * Clear the remaining fragments from FragmentManager
+     */
+    private void clearFragmentsFromFragmentManager() {
+        if (mFragments != null) {
+            for (int i = 0; i < mFragments.length; i++) {
+                Fragment f = mFragments[i];
+                if (f != null) {
+                    destroyItem(null, i, f);
+                }
+            }
+        }
+        mFragments = null;
     }
 
     @Override
     public void notifyDataSetChanged() {
-        mFragments = null;
+        ensureFragmentArray();
+//        for (int i = 0; i < mFragments.length; i++) {
+//            mFragments[i] = null;
+//        }
         super.notifyDataSetChanged();
     }
+
 }
