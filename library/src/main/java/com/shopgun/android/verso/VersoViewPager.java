@@ -10,6 +10,8 @@ public class VersoViewPager extends LazyCenteredViewPager {
 
     public static final String TAG = VersoViewPager.class.getSimpleName();
 
+    private boolean mPagingEnabled = true;
+
     public VersoViewPager(Context context) {
         super(context);
     }
@@ -56,22 +58,22 @@ public class VersoViewPager extends LazyCenteredViewPager {
         return false;
     }
 
-    protected void setPosition(int item) {
-        super.setCurrentItem(item);
-    }
-
-    protected void setPosition(int item, boolean smoothScroll) {
-        super.setCurrentItem(item, smoothScroll);
+    public void enablePaging(boolean enabled) {
+        mPagingEnabled = enabled;
     }
 
     @Override
     public void setCurrentItem(int item) {
-        throw new IllegalAccessError("setCurrentItem(int) must not be invoked directly - please use VersoFragment.setPosition(int) ");
+        if (mPagingEnabled) {
+            super.setCurrentItem(item);
+        }
     }
 
     @Override
     public void setCurrentItem(int item, boolean smoothScroll) {
-        throw new IllegalAccessError("setCurrentItem(int, boolean) must not be invoked directly - please use VersoFragment.setPosition(int) ");
+        if (mPagingEnabled) {
+            super.setCurrentItem(item, smoothScroll);
+        }
     }
 
 }

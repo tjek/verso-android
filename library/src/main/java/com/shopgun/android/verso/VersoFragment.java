@@ -15,10 +15,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.shopgun.android.utils.TextUtils;
-import com.shopgun.android.utils.ToStringUtils;
 import com.shopgun.android.utils.log.L;
-import com.shopgun.android.utils.log.LogUtil;
-import com.shopgun.android.verso.utils.OnPageChangeListenerLogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -375,7 +372,7 @@ public class VersoFragment extends Fragment {
         if (position >= 0 &&
                 mVersoViewPager != null &&
                 mVersoViewPager.getCurrentItem() != position) {
-            mVersoViewPager.setPosition(position, false);
+            mVersoViewPager.setCurrentItem(position, false);
         }
     }
 
@@ -383,14 +380,14 @@ public class VersoFragment extends Fragment {
      * Go to the next page in the catalog
      */
     public void nextPage() {
-        mVersoViewPager.setPosition(getPosition() + 1, true);
+        mVersoViewPager.setCurrentItem(getPosition() + 1, true);
     }
 
     /**
      * Go to the previous page in the catalog
      */
     public void previousPage() {
-        mVersoViewPager.setPosition(getPosition() - 1, true);
+        mVersoViewPager.setCurrentItem(getPosition() - 1, true);
     }
 
     @Override
@@ -449,7 +446,7 @@ public class VersoFragment extends Fragment {
                 mPage = mSavedState.pages[0];
                 int spread = mVersoSpreadConfiguration.getSpreadPositionFromPage(mPage);
                 int[] pages = mVersoSpreadConfiguration.getPagesFromSpreadPosition(spread);
-                mVersoViewPager.setPosition(spread);
+                mVersoViewPager.setCurrentItem(spread);
                 dispatchOnPagesChanged(spread, pages, mSavedState.position, mSavedState.pages);
             }
         }
@@ -491,7 +488,7 @@ public class VersoFragment extends Fragment {
         } else if (mVersoViewPager != null) {
             mVersoAdapter = null;
             mVersoViewPager.setAdapter(null);
-            mVersoViewPager.setPosition(0);
+            mVersoViewPager.setCurrentItem(0);
         }
     }
 
@@ -522,6 +519,33 @@ public class VersoFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(SAVED_STATE, mSavedState);
+    }
+
+    protected VersoPageViewFragment getCurrentFragment() {
+        if (mVersoAdapter != null) {
+            for (Fragment fragment : mVersoAdapter.getFragments()) {
+                VersoPageViewFragment f = (VersoPageViewFragment) fragment;
+                if (f != null && f.getSpreadPosition() == getPosition()) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return {@code true} is the current spread is at a scaled state, else {@code false}
+     */
+    public boolean isCurrentSpreadScaled() {
+        VersoPageViewFragment f = getCurrentFragment();
+        return f != null && f.isScaled();
+    }
+
+    public void resetCurrentSpreadScale() {
+        VersoPageViewFragment f = getCurrentFragment();
+        if (f != null && f.getZoomLayout() != null) {
+            f.getZoomLayout().setScale(1.0f, true);
+        }
     }
 
     private class PageViewEventDispatcher implements
@@ -555,6 +579,7 @@ public class VersoFragment extends Fragment {
 
         @Override
         public void onZoomBegin(VersoZoomPanInfo info) {
+            mVersoViewPager.enablePaging(false);
             if (mZoomListener != null) mZoomListener.onZoomBegin(info);
         }
 
@@ -565,6 +590,7 @@ public class VersoFragment extends Fragment {
 
         @Override
         public void onZoomEnd(VersoZoomPanInfo info) {
+            mVersoViewPager.enablePaging(!isCurrentSpreadScaled());
             if (mZoomListener != null) mZoomListener.onZoomEnd(info);
         }
 
