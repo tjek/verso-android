@@ -58,7 +58,7 @@ public class VersoViewPager extends LazyCenteredViewPager {
         return false;
     }
 
-    public void enablePaging(boolean enabled) {
+    public void setPagingEnabled(boolean enabled) {
         mPagingEnabled = enabled;
     }
 
