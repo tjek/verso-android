@@ -3,14 +3,16 @@ package com.shopgun.android.verso.sample.imageview;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.AppCompatImageView;
 import android.widget.ImageView;
 
 import com.shopgun.android.utils.log.L;
 import com.shopgun.android.verso.VersoPageView;
+import com.shopgun.android.verso.VersoPageViewFragment;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-public class ImageViewPageView extends ImageView implements VersoPageView {
+public class ImageViewPageView extends AppCompatImageView implements VersoPageView {
 
     public static final String TAG = ImageViewPageView.class.getSimpleName();
 
@@ -39,14 +41,13 @@ public class ImageViewPageView extends ImageView implements VersoPageView {
     }
 
     @Override
-    public void setOnCompletionListener() {
-        log("setOnCompletionListener");
+    public int getPage() {
+        return mCatalogPage.page;
     }
 
     @Override
-    public OnLoadCompletionListener getOnLoadCompleteListener() {
-        log("getOnLoadCompleteListener");
-        return null;
+    public void setOnLoadCompleteListener(VersoPageViewFragment.OnLoadCompleteListener listener) {
+
     }
 
     @Override

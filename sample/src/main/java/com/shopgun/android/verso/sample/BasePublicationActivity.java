@@ -20,6 +20,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
 
     public static final String FRAG_TAG = "frag_tag";
 
+    VersoFragment fragment;
     TextView mInfo;
     String mPagesInfoScroll = "no info";
     String mPagesInfoChange = "no info";
@@ -34,7 +35,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verso);
 
-        VersoFragment fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
+        fragment = (VersoFragment) getSupportFragmentManager().findFragmentById(R.id.verso);
         if (fragment == null) {
             fragment = new VersoFragment();
             getSupportFragmentManager()
@@ -52,6 +53,12 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
         mInfo.setMaxLines(5);
         updateInfo();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fragment.notifyVersoConfigurationChanged();
     }
 
     private void setupListeners(VersoFragment fragment) {

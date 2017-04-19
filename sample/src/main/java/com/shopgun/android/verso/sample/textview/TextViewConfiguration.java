@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatTextView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.verso.VersoPageView;
+import com.shopgun.android.verso.VersoPageViewFragment;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
 import com.shopgun.android.verso.VersoSpreadProperty;
 import com.shopgun.android.verso.sample.SpreadLayoutImpl;
@@ -61,12 +63,14 @@ public class TextViewConfiguration implements VersoSpreadConfiguration {
         return true;
     }
 
-    private class VersoTextView extends TextView implements VersoPageView {
+    private class VersoTextView extends AppCompatTextView implements VersoPageView {
 
+        private int mPage;
         private float mTextSize = 30;
 
         public VersoTextView(Context context, int page) {
             super(context);
+            mPage = page;
             onZoom(1f);
             setText("Page " + page);
         }
@@ -78,13 +82,13 @@ public class TextViewConfiguration implements VersoSpreadConfiguration {
         }
 
         @Override
-        public void setOnCompletionListener() {
-
+        public int getPage() {
+            return mPage;
         }
 
         @Override
-        public OnLoadCompletionListener getOnLoadCompleteListener() {
-            return null;
+        public void setOnLoadCompleteListener(VersoPageViewFragment.OnLoadCompleteListener listener) {
+
         }
 
         @Override

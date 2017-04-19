@@ -14,8 +14,7 @@ public class CatalogPage {
         }
         return pages;
     }
-
-    private static final String URL = "https://akamai.shopgun.com/img/catalog/%s/%s-%s.jpg?m=ocgidm";
+    private static final String URL = "https://d3ikkoqs9ddhdl.cloudfront.net/img/catalog/%s/%s-%s.jpg?m=ocgidm";
 
     public final String id;
     public final int page;
@@ -27,7 +26,7 @@ public class CatalogPage {
     public final String zoom;
 
     public CatalogPage(int page) {
-        this("6cefeh3", page, 1525, 2008);
+        this("4ad9n7q", page, 1536, 1815);
     }
 
     public CatalogPage(String id, int page, int width, int height) {
