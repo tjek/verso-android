@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import com.shopgun.android.utils.NumberUtils;
 import com.shopgun.android.utils.TextUtils;
 import com.shopgun.android.utils.log.L;
 
@@ -124,6 +125,7 @@ public class VersoFragment extends Fragment {
         int mCurrentPosition = 0;
         int[] mCurrentPages = new int[]{};
         int mScrollPosition = 0;
+        VersoSpreadProperty mSpreadProperty;
         Rect mFragmentHitRect = new Rect();
         float mLastOffset = 0;
 
@@ -181,6 +183,7 @@ public class VersoFragment extends Fragment {
         private void scrollTo(int position) {
             int prevPos = mScrollPosition;
             mScrollPosition = position;
+            mSpreadProperty = mVersoSpreadConfiguration.getSpreadProperty(mScrollPosition);
             int[] previousPages = mVersoSpreadConfiguration.getSpreadProperty(prevPos).getPages();
             int[] currentPages = mVersoSpreadConfiguration.getSpreadProperty(mScrollPosition).getPages();
             dispatchOnPagesScrolled(mScrollPosition, currentPages, prevPos, previousPages);
@@ -215,12 +218,13 @@ public class VersoFragment extends Fragment {
 
         @Override
         public boolean isInAbsoluteStart() {
-            return mBounceDecoreEnabled && mScrollPosition == 0;
+            return mBounceDecoreEnabled && mScrollPosition == 0 && NumberUtils.isEqual(mLastOffset, 0f);
         }
 
         @Override
         public boolean isInAbsoluteEnd() {
-            return mBounceDecoreEnabled && mScrollPosition == mVersoAdapter.getCount()-1;
+            return mBounceDecoreEnabled && mScrollPosition == mVersoAdapter.getCount()-1 &&
+                    NumberUtils.isEqual(mLastOffset, mSpreadProperty.getWidth());
         }
     }
 
@@ -658,6 +662,7 @@ public class VersoFragment extends Fragment {
     private void dispatchOnPagesChanged(int currentPosition, int[] currentPages, int previousPosition, int[] previousPages) {
         mPageChangeDispatcher.mCurrentPosition = currentPosition;
         mPageChangeDispatcher.mScrollPosition = currentPosition;
+        mPageChangeDispatcher.mSpreadProperty = mVersoSpreadConfiguration.getSpreadProperty(currentPosition);
         mPageChangeDispatcher.mCurrentPages = currentPages;
         if (mPageChangeListeners != null) {
             for (int i = 0, z = mPageChangeListeners.size(); i < z; i++) {
