@@ -1,6 +1,8 @@
 package com.shopgun.android.verso;
 
+import com.shopgun.android.utils.NumberUtils;
 import com.shopgun.android.utils.TextUtils;
+import com.shopgun.android.utils.log.L;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 
 import java.util.Arrays;
@@ -27,7 +29,9 @@ public class VersoTapInfo extends ZoomLayout.TapInfo {
         mPosition = mFragment.mPosition;
         mPages = Arrays.copyOf(mFragment.mPages, mFragment.mPages.length);
         float pageWidth = 1f / (float) mPages.length;
-        int pagePos = (int) Math.floor(getPercentX() / pageWidth);
+        // if the percent is exactly 1.0 then the pagePos will be off by one so we'll clamp the result
+        float x = NumberUtils.clamp(0f, getPercentX(), 0.999f);
+        int pagePos = (int) Math.floor(x / pageWidth);
         mPageTapped = info.isContentClicked() ? mPages[pagePos] : NO_CONTENT;
     }
 
