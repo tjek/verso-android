@@ -85,7 +85,6 @@ public class VersoFragment extends Fragment {
         if (savedInstanceState != null) {
             mSavedState = savedInstanceState.getParcelable(SAVED_STATE);
         }
-        onRestoreState();
         // Omit the left/right edge compat, and use over-scrolling instead
         if (mBounceDecoreEnabled) {
             mBounceDecore = new HorizontalOverScrollBounceEffectDecorator(mPageChangeDispatcher);
@@ -411,7 +410,6 @@ public class VersoFragment extends Fragment {
             mVersoSpreadConfiguration.onConfigurationChanged(newConfig);
             notifyVersoConfigurationChanged();
             mVersoViewPager.addOnPageChangeListener(mPageChangeDispatcher);
-            onRestoreState();
             onInternalResume(newConfig);
         }
     }
@@ -424,6 +422,7 @@ public class VersoFragment extends Fragment {
                 mVersoViewPager.setPageMargin(mVersoSpreadConfiguration.getSpreadMargin());
             }
         }
+        onRestoreState();
         ensureAdapter();
         setPage(mPage);
     }
