@@ -2,24 +2,9 @@
 
 A multi-paged viewer for Android.
 
-## Dependency
+## Download
 
-Add this in your root `build.gradle` file (**not** your module `build.gradle` file):
-
-```gradle
-allprojects {
-	repositories {
-        maven { url "https://jitpack.io" }
-    }
-}
-```
-
-Then, add the library to your module `build.gradle`
-```gradle
-dependencies {
-    compile 'com.shopgun.android:verso:0.8.0'
-}
-```
+Unfortunately there is an issue with uploading to out Maven repo, so you'll have to clone and incude this project.
 
 ## Features
 - Easily create a multi-paged `ViewPager` like viewer.
