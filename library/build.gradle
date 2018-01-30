@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 27
         versionCode 1
         versionName "0.8.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -42,14 +42,14 @@ android {
 dependencies {
 
     def libs = rootProject.libDependencies
-    compile libs.markhor
-    compile libs.appcompat
-    compile libs.zoomlayout
-    compile libs.overscrollDecor
-    androidTestCompile(libs.espresso, {
+    api libs.markhor
+    api libs.appcompat
+    api libs.zoomlayout
+    api libs.overscrollDecor
+    androidTestImplementation(libs.espresso, {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    testCompile libs.junit
+    testImplementation libs.junit
 
 }
 
