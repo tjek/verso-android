@@ -466,7 +466,7 @@ public class VersoFragment extends Fragment {
     private void ensureAdapter() {
         if (mVersoSpreadConfiguration != null) {
             if (mVersoAdapter == null) {
-                mVersoAdapter = new VersoAdapter(getFragmentManager(), mVersoSpreadConfiguration);
+                mVersoAdapter = new VersoAdapter(getChildFragmentManager(), mVersoSpreadConfiguration);
                 mDispatcher = new PageViewEventDispatcher();
                 mVersoAdapter.setOnTouchListener(mDispatcher);
                 mVersoAdapter.setOnTapListener(mDispatcher);
