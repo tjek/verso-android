@@ -28,8 +28,12 @@ android {
 }
 
 dependencies {
-    compile project(':library')
+    implementation project(':library')
     def libs = rootProject.libDependencies
-    compile libs.okhttp
-    compile libs.picasso
+    implementation libs.okhttp
+    implementation libs.picasso
+    implementation libs.markhor
+    implementation libs.supportv4
+    implementation libs.appcompat
+    implementation libs.zoomlayout
 }
