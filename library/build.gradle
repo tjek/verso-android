@@ -19,7 +19,6 @@ buildscript {
 android {
 
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -40,7 +39,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    
+
 }
 
 dependencies {
