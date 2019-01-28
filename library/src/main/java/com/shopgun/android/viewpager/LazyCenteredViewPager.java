@@ -1,6 +1,7 @@
-package android.support.v4.view;
+package com.shopgun.android.viewpager;
 
 import android.content.Context;
+import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 
 

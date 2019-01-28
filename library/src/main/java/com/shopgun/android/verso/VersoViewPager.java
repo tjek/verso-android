@@ -1,7 +1,7 @@
 package com.shopgun.android.verso;
 
 import android.content.Context;
-import android.support.v4.view.LazyCenteredViewPager;
+import com.shopgun.android.viewpager.LazyCenteredViewPager;
 import android.support.v4.view.PagerAdapter;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
