@@ -19,7 +19,7 @@ ext {
     libDependencies = [
 
             // internal libs
-            markhor                     : "com.shopgun.android:utils:1.0.9",
+            markhor                     : "com.shopgun.android:utils:1.1.0",
 //            markhor                     : project(':markhor'),
 //            zoomlayout                  : "com.shopgun.android:zoomlayout:$libVersions.sgn.zoomlayout",
             zoomlayout                  : project(':zoomlayout'),
