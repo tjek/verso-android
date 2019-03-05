@@ -1,7 +1,7 @@
 package com.shopgun.android.verso.sample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,7 +45,6 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
                     .commit();
         }
         fragment.enableBounceDecore();
-        fragment.setVersoSpreadConfiguration(getSpreadConfiguration());
         setupListeners(fragment);
 
         mInfo = (TextView) findViewById(R.id.info);
@@ -58,6 +57,7 @@ public abstract class BasePublicationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        fragment.setVersoSpreadConfiguration(getSpreadConfiguration());
         fragment.notifyVersoConfigurationChanged();
     }
 

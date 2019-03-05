@@ -1,7 +1,7 @@
 package com.shopgun.android.viewpager;
 
 import android.content.Context;
-import android.support.v4.view.PagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
 import android.util.AttributeSet;
 
 

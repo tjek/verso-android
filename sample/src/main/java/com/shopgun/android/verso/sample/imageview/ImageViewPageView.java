@@ -3,8 +3,7 @@ package com.shopgun.android.verso.sample.imageview;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.AppCompatImageView;
-import android.widget.ImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.shopgun.android.utils.log.L;
 import com.shopgun.android.verso.VersoPageView;
