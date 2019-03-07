@@ -3,3 +3,4 @@ include ':zoomlayout'
 project(':zoomlayout').projectDir=new File('../zoomlayout/library')
 include ':markhor'
 project(':markhor').projectDir=new File('../markhor/library')
+enableFeaturePreview('STABLE_PUBLISHING')
