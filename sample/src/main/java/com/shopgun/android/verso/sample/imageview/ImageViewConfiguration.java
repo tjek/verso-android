@@ -1,8 +1,8 @@
 package com.shopgun.android.verso.sample.imageview;
 
 import android.content.res.Configuration;
-import android.os.Parcel;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -10,7 +10,6 @@ import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.utils.enums.Orientation;
 import com.shopgun.android.verso.VersoSpreadConfiguration;
 import com.shopgun.android.verso.VersoSpreadProperty;
-import com.shopgun.android.verso.sample.SpreadLayoutImpl;
 import com.shopgun.android.verso.sample.SpreadPropertyImpl;
 import com.shopgun.android.verso.sample.VersoSampleApp;
 

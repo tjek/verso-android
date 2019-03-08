@@ -2,12 +2,11 @@ package com.shopgun.android.verso.sample.textview;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Parcel;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.AppCompatTextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatTextView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.shopgun.android.utils.UnitUtils;
 import com.shopgun.android.verso.VersoPageView;
