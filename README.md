@@ -4,7 +4,9 @@ A multi-paged viewer for Android.
 
 ## Download
 
-Unfortunately there is an issue with uploading to out Maven repo, so you'll have to clone and incude this project.
+```
+implementation "com.shopgun.android:verso:0.9.0" // 2.0.0 for Androidx
+```
 
 ## Features
 - Easily create a multi-paged `ViewPager` like viewer.
