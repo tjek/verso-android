@@ -58,4 +58,4 @@ dependencies {
 
 // Apply the Bintray plugin. Do release with "gradlew bintrayUpload"
 // Setup BINTRAY_USER and BINTRAY_KEY in your global gradle.properties to upload
-apply from: 'bintray.gradle'
+//apply from: 'bintray.gradle'
