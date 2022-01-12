@@ -1,11 +1,27 @@
+[![](https://jitpack.io/v/shopgun/verso-android.svg)](https://jitpack.io/#shopgun/verso-android)
+
+
 ## Verso-android
 
 A multi-paged viewer for Android.
 
 ## Download
 
+Add this in your root `build.gradle` file (**not** your module `build.gradle` file):
+
+```gradle
+allprojects {
+	repositories {
+        maven { url "https://jitpack.io" }
+    }
+}
 ```
-implementation "com.shopgun.android:verso:0.9.0" // 2.0.0 for Androidx
+
+Then, add the library to your module `build.gradle`
+```gradle
+dependencies {
+    implementation 'com.github.shopgun:verso-android:3.0.0'
+}
 ```
 
 ## Features
