@@ -1,6 +1,9 @@
-include ':library', ':sample'
-include ':zoomlayout'
-project(':zoomlayout').projectDir=new File('../zoomlayout/library')
-include ':markhor'
-project(':markhor').projectDir=new File('../markhor/library')
-enableFeaturePreview('STABLE_PUBLISHING')
+include ':library'
+if (!System.env.JITPACK) {
+    include ':sample'
+    include ':zoomlayout'
+    project(':zoomlayout').projectDir=new File('../zoomlayout/library')
+    include ':markhor'
+    project(':markhor').projectDir=new File('../markhor/library')
+}
+

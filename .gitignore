@@ -11,3 +11,5 @@
 .idea/codeStyles
 .idea/markdown-navigator
 markdown-navigator.xml
+compiler.xml
+jarRepositories.xml

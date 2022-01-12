@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../markhor/library/markhor.iml" filepath="$PROJECT_DIR$/../markhor/library/markhor.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sample/sample.iml" filepath="$PROJECT_DIR$/sample/sample.iml" />
       <module fileurl="file://$PROJECT_DIR$/verso-android.iml" filepath="$PROJECT_DIR$/verso-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../zoomlayout/library/zoomlayout.iml" filepath="$PROJECT_DIR$/../zoomlayout/library/zoomlayout.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/verso-android.library.iml" filepath="$PROJECT_DIR$/.idea/modules/library/verso-android.library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1271692172/verso-android.markhor.iml" filepath="$PROJECT_DIR$/.idea/modules/1271692172/verso-android.markhor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample/verso-android.sample.iml" filepath="$PROJECT_DIR$/.idea/modules/sample/verso-android.sample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/988686503/verso-android.zoomlayout.iml" filepath="$PROJECT_DIR$/.idea/modules/988686503/verso-android.zoomlayout.iml" />
     </modules>
   </component>
 </project>
